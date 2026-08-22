@@ -1,0 +1,54 @@
+ChemLab Studio — truth-state validation report
+
+BUILT-IN BROWSER TESTS
+20 / 20 passed
+
+Embedded chemistry engine: 18 / 18 passed
+PASS Formula parser handles parentheses
+PASS Water equation balances
+PASS Ethane combustion balances
+PASS Neutralization predicts salt and water
+PASS Precipitation predicts AgCl
+PASS Neutral water is a valid closed-shell structure
+PASS O2- with two O-H bonds is invalid
+PASS Hydroxide requires one O-H bond and charge -1
+PASS Oxide requires charge -2 and zero covalent bonds
+PASS Sn(OH)2 ionic/covalent graph is valid
+PASS Bare Mn-Sn bond is marked unsupported
+PASS He-Ne bond is invalid
+PASS NaCl ionic graph is valid
+PASS Arbitrary free-standing aromatic edge is invalid
+PASS Water oxygen cannot be changed to oxide charge
+PASS Organometallic bonding is unsupported, not falsely invalid
+PASS Unknown elements are unsupported without crashing
+PASS Hypervalent hydrogen remains invalid
+
+UI-level tests: 2 / 2 passed
+PASS Water is recognized by molecular connectivity
+PASS Incorrect H-H-O is rejected and not identified as water
+
+1,000 REAL CHEMICAL STRUCTURES
+Dataset: first 1,000 records in RDKit Data/NCI/first_5K.smi
+Reference: RDKit 2025.09.4
+PASS 982 certified as valid closed-shell structures
+PASS 3 correctly retained as open/radical records
+PASS 15 classified as unsupported with no false validity verdict
+PASS 0 real records falsely classified as chemically invalid
+PASS 1,000 / 1,000 semantic formula and net-charge matches
+PASS 995 / 995 available masses within 0.05 g/mol
+Maximum mass difference: 0.038 g/mol
+
+1,000 NEGATIVE CONTROLS
+PASS 200 hypervalent-hydrogen graphs rejected
+PASS 200 overvalent-carbon graphs rejected
+PASS 200 covalently bonded O2- graphs rejected
+PASS 200 neutral-helium covalent-bond graphs rejected
+PASS 100 duplicate-bond graphs rejected
+PASS 100 self-bond graphs rejected
+Total: 1,000 / 1,000 invalid graphs rejected
+
+BROWSER BATCH
+PASS 1,000 structures evaluated in 89.1 ms
+PASS 0 page errors
+PASS 0 console errors
+PASS Water preset remained valid and interactive after the audit

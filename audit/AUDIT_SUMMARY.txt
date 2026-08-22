@@ -1,0 +1,52 @@
+ChemLab Studio — 1,000-reference-structure audit
+
+Generated: 2026-08-21T21:01:11.522Z
+Reference set: First 1,000 records in RDKit Data/NCI/first_5K.smi
+Reference toolkit: RDKit 2025.09.4
+
+REAL STRUCTURES
+Tested: 1000
+Certified valid: 986
+Open / radical / incomplete: 3
+Outside current model: 11
+Invalid verdicts on reference structures: 0
+Exceptions / crashes: 0
+False-invalid verdicts: 0
+
+INVARIANT CHECKS
+Graph composition: 1000 / 1000
+Graph net charge: 1000 / 1000
+Formula parsing: 1000 / 1000
+Molar mass within 0.05 g/mol: 1000 / 1000
+Maximum molar-mass delta: 0.038000 g/mol
+Mean molar-mass delta: 0.002368 g/mol
+MOL files generated: 1000 / 1000
+MOL files parsed back by RDKit: 1000 / 1000
+MOL round-trip composition matches: 1000 / 1000
+MOL round-trip charge matches: 1000 / 1000
+
+INVALID NEGATIVE CONTROLS
+Total deliberately invalid graphs: 1000
+Correctly rejected as invalid: 1000
+False accepts: 0
+- Hypervalent hydrogen: 200 / 200
+- Overvalent carbon: 200 / 200
+- Covalently bonded oxide O2−: 200 / 200
+- Bonded neutral helium: 200 / 200
+- Duplicate bond: 100 / 100
+- Self bond: 100 / 100
+
+ENGINE AND BROWSER
+Embedded engine tests: 18 / 18
+Browser UI tests: 20 / 20
+Browser batch: 1000 structures, 0 exceptions
+Browser JavaScript page exceptions: 0
+Browser console errors: 0
+
+INTERPRETATION
+"Valid" means the structure is certified by the implemented Lewis/valence/charge/connectivity model.
+"Open" means the record is odd-electron, incomplete, or disconnected and is not silently called a closed-shell molecule.
+"Unsupported" means the structure may be real, but requires compound-specific organometallic, coordination, or crystal chemistry. No valid/invalid claim is made.
+
+SCOPE LIMIT
+This is a 1,000-structure validation audit, not a claim that the app predicts every possible reaction, phase, stereochemical state, catalyst effect, coordination complex, solid-state lattice, or quantum-chemical outcome.
