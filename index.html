@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
   <meta name="description" content="ChemLab Studio Advanced — an interactive Lewis-electron molecule builder, valence validator, equation balancer, and deterministic general-chemistry reaction engine.">
   <title>ChemLab Studio Advanced — Lewis Bonding</title>
   <style>
@@ -109,7 +110,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 .atom-cluster.incompatible .bond-handle{display:none}.atom-cluster.closed-shell .bond-handle{display:none}
 .closed-shell-badge{position:absolute;left:50%;top:100%;transform:translate(-50%,-10px);padding:4px 7px;border-radius:999px;background:white;border:1px solid #cfd8e4;color:#5d6b7e;font-size:.56rem;font-weight:900;white-space:nowrap;box-shadow:0 5px 12px rgba(18,34,56,.1);pointer-events:none;z-index:9}
 .bond-hit{stroke:transparent;stroke-width:19;pointer-events:stroke;cursor:pointer}.bond-hit:hover+.bond-visible{filter:drop-shadow(0 0 3px rgba(54,89,227,.8))}.bond-visible{pointer-events:none}.bond-preview{stroke:var(--secondary);stroke-width:5;stroke-linecap:round;stroke-dasharray:8 7;pointer-events:none;filter:drop-shadow(0 0 4px rgba(15,159,124,.35));animation:dash 1.1s linear infinite}.bond-electron{fill:var(--ink);stroke:white;stroke-width:1.1;pointer-events:none}.bond-preview-label{font-size:11px;font-weight:900;fill:var(--secondary-dark);paint-order:stroke;stroke:white;stroke-width:4px;stroke-linejoin:round;pointer-events:none}@keyframes dash{to{stroke-dashoffset:-30}}
-.inspector-callout{border-radius:12px;padding:10px 11px;margin:11px 0;font-size:.72rem;line-height:1.5}.inspector-callout.ready{background:#edf9f5;border:1px solid #cdece1;color:#086447}.inspector-callout.closed{background:#f2f5f8;border:1px solid #d7e0e9;color:#506079}.inspector-callout.warning{background:#fff7e9;border:1px solid #f2dbb7;color:#81500c}
+.inspector-callout{border-radius:12px;padding:10px 11px;margin:11px 0;font-size:.72rem;line-height:1.5}.inspector-callout.ready{background:#edf9f5;border:1px solid #cdece1;color:#086447}.inspector-callout.closed{background:#f2f5f8;border:1px solid #d7e0e9;color:#506079}.inspector-callout.warning{background:#fff7e9;border:1px solid #f2dbb7;color:#81500c}.inspector-callout.error{background:#fff1f4;border:1px solid #f0cbd3;color:#8f2439}
 .builder-summary{border-top:1px solid var(--line);padding:14px 15px;display:grid;gap:12px}
 .summary-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.summary-title{min-width:0}.summary-title strong{font-size:.92rem}.summary-title p{margin:3px 0 0;color:var(--muted);font-size:.76rem;line-height:1.45}
 .status-pill{border-radius:999px;padding:6px 9px;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.status-pill.valid{background:#e9f8f2;color:var(--good)}.status-pill.open{background:#fff5e5;color:#a45b00}.status-pill.invalid{background:#fff0f3;color:var(--danger)}.status-pill.mixture{background:#eef2ff;color:var(--primary-dark)}
@@ -117,6 +118,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 .summary-actions{display:flex;gap:7px;flex-wrap:wrap}
 .right-stack{display:grid;gap:16px}.inspector-empty{color:var(--muted);font-size:.8rem;line-height:1.55;margin:0}.inspector-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.77rem}.inspector-row:last-child{border-bottom:0}.inspector-row span{color:var(--muted)}
 .charge-controls{display:grid;grid-template-columns:38px 1fr 38px;gap:7px;align-items:center;margin:12px 0}.charge-value{height:38px;border:1px solid var(--line);border-radius:11px;background:#fbfcff;display:grid;place-items:center;font-weight:900}
+.charge-options{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 6px}.charge-option{min-width:42px;height:38px;padding:0 10px;border:1px solid var(--line-strong);border-radius:11px;background:white;color:var(--ink);font-weight:900;cursor:pointer}.charge-option:hover:not(:disabled){border-color:#93a5e8;transform:translateY(-1px)}.charge-option.active{background:var(--ink);border-color:var(--ink);color:white}.charge-option:disabled{cursor:not-allowed;opacity:.38}.charge-option.active:disabled{opacity:.72;background:var(--danger);border-color:var(--danger)}
 .bond-list{display:grid;gap:7px;margin-top:10px}.bond-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:8px 9px;background:#fbfcff;font-size:.73rem}.bond-item button{border:0;background:#fff0f3;color:var(--danger);border-radius:8px;width:29px;height:29px;font-weight:900}
 .validation-list{display:grid;gap:7px}.validation-message{border-radius:12px;padding:9px 10px;font-size:.73rem;line-height:1.5}.validation-message.error{background:#fff1f4;color:#8f2439;border:1px solid #f0cbd3}.validation-message.warning{background:#fff7e9;color:#81500c;border:1px solid #f2dbb7}.validation-message.good{background:#edf9f5;color:#086447;border:1px solid #cdece1}
 .saved-list{display:grid;gap:7px}.saved-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}.saved-item strong{display:block;font-size:.74rem}.saved-item small{display:block;color:var(--muted);font-size:.65rem;margin-top:2px}.saved-actions{display:flex;gap:5px}.saved-actions button{border:0;border-radius:8px;padding:6px 7px;font-size:.65rem;font-weight:800}
@@ -157,10 +159,10 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     <nav class="topbar" aria-label="Main navigation">
       <div class="brand">
         <div class="brand-mark">C₂</div>
-        <div><strong>ChemLab Studio</strong><small>Rule-driven chemistry sandbox</small></div>
+        <div><strong>ChemLab Studio</strong><small>Conservative chemistry sandbox</small></div>
       </div>
       <div class="top-actions">
-        <div class="engine-pill"><i></i> Local rule engine</div>
+        <div class="engine-pill"><i></i> Strict truth mode</div>
         <button class="btn ghost small" id="howBtn">How it works</button>
         <button class="btn ghost small" id="testsBtn">Run engine tests</button>
         <button class="btn primary small" id="jumpBtn">Open laboratory</button>
@@ -171,7 +173,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
       <div class="hero-copy">
         <div class="eyebrow">Construct · validate · react</div>
         <h1>Build structures that obey chemistry rules.</h1>
-        <p>Connect atoms with covalent or ionic interactions, assign formal charges, complete valences, identify known molecular graphs, predict supported reaction families, and balance equations by atom conservation.</p>
+        <p>Build only structures the local engine can justify with explicit valence, formal-charge, shell-capacity, ionic, and connectivity rules. Unsupported metal, aromatic, coordination, or reaction cases are rejected instead of guessed.</p>
         <div class="hero-actions">
           <button class="btn primary" id="heroStartBtn">Start building</button>
           <button class="btn ghost" data-load-preset="H2O">Load water</button>
@@ -180,7 +182,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
       </div>
       <div class="hero-side">
         <article class="rule-card"><div class="rule-icon">1</div><div><strong>Graph-based structures</strong><p>Molecule identity uses atom connectivity, bond order, and formal charge—not atom counts alone.</p></div></article>
-        <article class="rule-card"><div class="rule-icon">2</div><div><strong>Valence enforcement</strong><p>Unsupported bonds are blocked before they are added. Open valences and radicals remain visible.</p></div></article>
+        <article class="rule-card"><div class="rule-icon">2</div><div><strong>Conservative validation</strong><p>Formal charge, lone electrons, duet/octet capacity, and ionic charge balance must agree. Unsupported advanced bonding is rejected.</p></div></article>
         <article class="rule-card"><div class="rule-icon">3</div><div><strong>No invented reactions</strong><p>The predictor returns products only when an exact or deterministic general-chemistry rule applies.</p></div></article>
       </div>
     </section>
@@ -206,7 +208,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
             <button class="btn small" data-bond-type="single"><span class="bond-label-text">Single</span> —</button>
             <button class="btn small" data-bond-type="double"><span class="bond-label-text">Double</span> ═</button>
             <button class="btn small" data-bond-type="triple"><span class="bond-label-text">Triple</span> ≡</button>
-            <button class="btn small" data-bond-type="aromatic"><span class="bond-label-text">Aromatic</span> ◌</button>
+            <button class="btn small" disabled title="Aromaticity is a ring property. Build alternating single/double bonds or load a validated aromatic preset."><span class="bond-label-text">Aromatic*</span> ◌</button>
             <button class="btn small" data-bond-type="ionic"><span class="bond-label-text">Ionic</span> ⋯</button>
           </div>
           <div class="tool-group">
@@ -235,7 +237,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
             <div class="empty-inner">
               <div class="empty-icon">⚛</div>
               <h3>Add an atom to begin</h3>
-              <p>Valence electrons appear around each atom. Drag a glowing electron dot to another atom; compatible targets turn green and impossible bonds are blocked.</p>
+              <p>Valence electrons appear around supported nonmetals. Drag a glowing site to another atom; only rule-compatible targets turn green, and unsupported structures are rejected.</p>
             </div>
           </div>
         </div>
@@ -262,12 +264,12 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 
       <aside class="right-stack">
         <section class="panel">
-          <div class="panel-header"><h2>Atom inspector</h2><p>Select an atom to inspect bonds, formal charge, electrons, and remaining bonding capacity.</p></div>
+          <div class="panel-header"><h2>Atom inspector</h2><p>Select an atom to inspect bonds, supported formal or ionic charge, electrons, and permitted interactions.</p></div>
           <div class="panel-body" id="inspector"><p class="inspector-empty">Nothing selected. Click an atom in the workspace.</p></div>
         </section>
 
         <section class="panel">
-          <div class="panel-header"><h2>Structure validation</h2><p>Errors block the structure. Warnings mark open valence, radicals, or model boundaries.</p></div>
+          <div class="panel-header"><h2>Structure validation</h2><p>Errors reject the structure. Warnings mean the engine has not certified a complete closed-shell species.</p></div>
           <div class="panel-body"><div class="validation-list" id="validationList"></div></div>
         </section>
 
@@ -318,10 +320,10 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     <section class="panel balancer-section">
       <div class="panel-header"><h2>What the engine covers</h2><p>This is a broad introductory/general-chemistry engine, not a quantum-chemistry simulator or universal synthesis predictor.</p></div>
       <div class="panel-body coverage-grid">
-        <article class="coverage-card"><strong>Structure rules</strong><p>Common valence states, formal charges, ionic interactions, radicals, octet/duet checks, connected components, graph identity, formula, mass, and unsaturation.</p></article>
+        <article class="coverage-card"><strong>Strict structure rules</strong><p>Exact charge states, formal-charge electron accounting, first-shell and octet limits, ionic polarity, neutral salt ratios, radicals, graph identity, formula, mass, and unsaturation.</p></article>
         <article class="coverage-card"><strong>Reaction families</strong><p>Combustion, neutralization, acid–carbonate, activity-series displacement, halogen displacement, precipitation, combination, oxidation, and common decompositions.</p></article>
         <article class="coverage-card"><strong>Equation solver</strong><p>Arbitrary formulas with parentheses, hydrates, and explicit ionic charge can be balanced when a positive unique solution exists.</p></article>
-        <article class="coverage-card"><strong>Deliberate boundary</strong><p>Organic synthesis pathways, kinetics, stereochemistry, transition-state chemistry, solvent effects, and condition-dependent competing products require external databases or trained models.</p></article>
+        <article class="coverage-card"><strong>Deliberate boundary</strong><p>Organometallics, coordination complexes, intermetallic crystals, free-form aromaticity, synthesis pathways, kinetics, stereochemistry, and condition-dependent products require compound-specific data and are blocked rather than guessed.</p></article>
       </div>
     </section>
   </div>
@@ -332,8 +334,8 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     <section class="modal">
       <header><h2 id="howTitle">How the chemistry engine works</h2><button class="btn ghost icon-btn" data-close-modal="howModal" aria-label="Close">×</button></header>
       <main>
-        <h3>1. Molecular graph</h3><p>Every atom is a node. Covalent, aromatic, and ionic interactions are edges. Known molecules are identified by graph isomorphism, so an incorrect H–H–O structure is not recognized as water even though it contains H₂O.</p>
-        <h3>2. Lewis electrons and bonding</h3><p>The canvas shows a simplified Lewis view. Lone-pair electrons are visible but inert. Glowing unpaired electrons are bond launchers: choose a bond type, then drag one onto a compatible atom or click it and then click a green target. Before accepting the bond, the engine checks the required bond order against both atoms’ supported valence states and formal charges.</p><p>Neutral helium and neon have filled shells, so they intentionally show no glowing bonding electron and cannot be joined by an ordinary classroom covalent or ionic bond. Ionic interactions require opposite charges; common charges can be assigned automatically for a typical metal–nonmetal pair.</p>
+        <h3>1. Molecular graph</h3><p>Every atom is a node. Supported covalent and ionic interactions are edges. Known molecules are identified by graph isomorphism, so an incorrect H–H–O structure is not recognized as water even though it contains H₂O. Aromaticity is treated as a ring-level property and is not accepted as an arbitrary two-atom edge.</p>
+        <h3>2. Lewis electrons and bonding</h3><p>The canvas shows a simplified Lewis view for main-group atoms. Before accepting a bond or charge change, the engine recomputes nonbonding electrons from formal charge, checks exact permitted bond order, and enforces first-shell or octet capacity. For example, oxide O²⁻ is valid with zero covalent bonds, hydroxide OH⁻ with one O–H bond, and water H₂O with two O–H bonds and neutral oxygen.</p><p>Neutral helium and neon have filled shells. Generic metal–metal, organometallic, and coordination bonds are not certified by a simple Lewis model, so the builder blocks them. Common salts use a positive metal cation, a negative nonmetal anion, and explicit charge balance.</p>
         <h3>3. Reactions</h3><p>The predictor first checks exact textbook reactions, then deterministic families such as complete combustion, neutralization, activity-series displacement, and precipitation. It balances generated products using conservation of elements and charge.</p>
         <h3>4. Scientific boundary</h3><p>A universal reaction predictor cannot be derived from reactant identity alone. Real outcomes can depend on solvent, temperature, pressure, catalyst, concentration, phase, light, electrochemical potential, and reaction history. Unsupported cases therefore return “not uniquely predictable” instead of a fabricated equation.</p>
         <h3>Safety</h3><p>This application teaches representations and reaction logic. It does not provide experimental quantities, apparatus instructions, or operational synthesis procedures.</p>
@@ -362,16 +364,16 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     Li: { name:'Lithium',  atomicNumber:3,  mass:6.94,    valenceElectrons:1, category:'alkali metal', color:'#b987db', text:'#fff', commonCharges:[1], valences:{'0':[1],'1':[0]}, metal:true },
     B:  { name:'Boron',    atomicNumber:5,  mass:10.81,   valenceElectrons:3, category:'metalloid', color:'#e5a55c', text:'#4f2c08', commonCharges:[3], valences:{'-1':[4],'0':[3],'1':[2]} },
     C:  { name:'Carbon',   atomicNumber:6,  mass:12.011,  valenceElectrons:4, category:'nonmetal', color:'#384454', text:'#fff', commonCharges:[-4,4], valences:{'-1':[3],'0':[4],'1':[3]} },
-    N:  { name:'Nitrogen', atomicNumber:7,  mass:14.007,  valenceElectrons:5, category:'nonmetal', color:'#536bdb', text:'#fff', commonCharges:[-3,3,5], valences:{'-1':[2],'0':[3],'1':[4]} },
-    O:  { name:'Oxygen',   atomicNumber:8,  mass:15.999,  valenceElectrons:6, category:'nonmetal', color:'#e64f67', text:'#fff', commonCharges:[-2], valences:{'-1':[1],'0':[2],'1':[3]} },
+    N:  { name:'Nitrogen', atomicNumber:7,  mass:14.007,  valenceElectrons:5, category:'nonmetal', color:'#536bdb', text:'#fff', commonCharges:[-3,3,5], valences:{'-3':[0],'-1':[2],'0':[3],'1':[4]} },
+    O:  { name:'Oxygen',   atomicNumber:8,  mass:15.999,  valenceElectrons:6, category:'nonmetal', color:'#e64f67', text:'#fff', commonCharges:[-2], valences:{'-2':[0],'-1':[1],'0':[2],'1':[3]} },
     F:  { name:'Fluorine', atomicNumber:9,  mass:18.998,  valenceElectrons:7, category:'halogen', color:'#43bd9b', text:'#fff', commonCharges:[-1], valences:{'-1':[0],'0':[1]} },
     Ne: { name:'Neon',     atomicNumber:10, mass:20.180,  valenceElectrons:8, category:'noble gas', color:'#c9eaff', text:'#28506a', commonCharges:[0], valences:{'0':[0]} },
     Na: { name:'Sodium',   atomicNumber:11, mass:22.990,  valenceElectrons:1, category:'alkali metal', color:'#9b72d6', text:'#fff', commonCharges:[1], valences:{'0':[1],'1':[0]}, metal:true },
     Mg: { name:'Magnesium',atomicNumber:12, mass:24.305,  valenceElectrons:2, category:'alkaline earth metal', color:'#7eb76b', text:'#fff', commonCharges:[2], valences:{'0':[2],'2':[0]}, metal:true },
     Al: { name:'Aluminium',atomicNumber:13, mass:26.982,  valenceElectrons:3, category:'post-transition metal', color:'#8ca1ad', text:'#fff', commonCharges:[3], valences:{'0':[3],'3':[0]}, metal:true },
     Si: { name:'Silicon',  atomicNumber:14, mass:28.085,  valenceElectrons:4, category:'metalloid', color:'#c29b7d', text:'#fff', commonCharges:[-4,4], valences:{'0':[4]} },
-    P:  { name:'Phosphorus',atomicNumber:15,mass:30.974,  valenceElectrons:5, category:'nonmetal', color:'#ef8a45', text:'#fff', commonCharges:[-3,3,5], valences:{'-1':[2,4],'0':[3,5],'1':[4,6]}, expandedOctet:true },
-    S:  { name:'Sulfur',   atomicNumber:16, mass:32.06,   valenceElectrons:6, category:'nonmetal', color:'#efbb3f', text:'#4b3904', commonCharges:[-2,4,6], valences:{'-1':[1,3,5],'0':[2,4,6],'1':[3,5]}, expandedOctet:true },
+    P:  { name:'Phosphorus',atomicNumber:15,mass:30.974,  valenceElectrons:5, category:'nonmetal', color:'#ef8a45', text:'#fff', commonCharges:[-3,3,5], valences:{'-3':[0],'-1':[2,4],'0':[3,5],'1':[4,6]}, expandedOctet:true },
+    S:  { name:'Sulfur',   atomicNumber:16, mass:32.06,   valenceElectrons:6, category:'nonmetal', color:'#efbb3f', text:'#4b3904', commonCharges:[-2,4,6], valences:{'-2':[0],'-1':[1,3,5],'0':[2,4,6],'1':[3,5]}, expandedOctet:true },
     Cl: { name:'Chlorine', atomicNumber:17, mass:35.45,   valenceElectrons:7, category:'halogen', color:'#42b85b', text:'#fff', commonCharges:[-1,1,3,5,7], valences:{'-1':[0],'0':[1,3,5,7],'1':[2,4,6]}, expandedOctet:true },
     K:  { name:'Potassium',atomicNumber:19, mass:39.098,  valenceElectrons:1, category:'alkali metal', color:'#8865ce', text:'#fff', commonCharges:[1], valences:{'0':[1],'1':[0]}, metal:true },
     Ca: { name:'Calcium',  atomicNumber:20, mass:40.078,  valenceElectrons:2, category:'alkaline earth metal', color:'#6dad70', text:'#fff', commonCharges:[2], valences:{'0':[2],'2':[0]}, metal:true },
@@ -657,95 +659,266 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     return components;
   }
 
+  function supportedChargeValues(atomOrSymbol) {
+    const symbol = typeof atomOrSymbol === 'string' ? atomOrSymbol : atomOrSymbol?.symbol;
+    const el = ELEMENTS[symbol];
+    if (!el) return [];
+    return Object.keys(el.valences || {}).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);
+  }
+
   function valenceOptions(atom) {
     const el = ELEMENTS[atom.symbol];
     if (!el) return [];
     const charge = String(Number(atom.charge || 0));
-    return el.valences[charge] || el.valences['0'] || [];
+    return Object.prototype.hasOwnProperty.call(el.valences || {}, charge) ? el.valences[charge].slice() : [];
+  }
+
+  function engineChargeText(charge) {
+    const q = Number(charge || 0);
+    if (!q) return '0';
+    return `${Math.abs(q) === 1 ? '' : Math.abs(q)}${q > 0 ? '+' : '−'}`;
+  }
+
+  function atomCovalentOrder(atomId, bonds) {
+    return bonds.filter(b => !isIonicBond(b) && (b.a === atomId || b.b === atomId)).reduce((sum,b)=>sum+bondOrder(b),0);
   }
 
   function validateGraph(atoms, bonds) {
     const errors = [], warnings = [], atomStates = [];
     const atomById = new Map(atoms.map(a => [a.id,a]));
     const duplicate = new Set();
+    const invalidAtomIds = new Set();
+    const addBondError = (message,bond) => {
+      errors.push(message);
+      if (bond) { invalidAtomIds.add(bond.a); invalidAtomIds.add(bond.b); }
+    };
+
     for (const bond of bonds) {
-      if (bond.a === bond.b) errors.push('An atom cannot bond to itself.');
-      if (!atomById.has(bond.a) || !atomById.has(bond.b)) errors.push('A bond references an atom that does not exist.');
-      const key = [bond.a,bond.b].sort((a,b)=>a-b).join(':');
-      if (duplicate.has(key)) errors.push('Duplicate bonds were detected.');
+      if (bond.a === bond.b) addBondError('An atom cannot bond to itself.',bond);
+      const a = atomById.get(bond.a), b = atomById.get(bond.b);
+      if (!a || !b) { addBondError('A bond references an atom that does not exist.',bond); continue; }
+      const key = [bond.a,bond.b].sort((x,y)=>x-y).join(':');
+      if (duplicate.has(key)) addBondError('Duplicate bonds were detected.',bond);
       duplicate.add(key);
-      if (!BOND_TYPES[bond.type || 'single'] && typeof bond.order !== 'number') errors.push('Unknown bond type.');
+      const type = bond.type || 'single';
+      if (!BOND_TYPES[type] && typeof bond.order !== 'number') { addBondError('Unknown bond type.',bond); continue; }
+      const ea = ELEMENTS[a.symbol], eb = ELEMENTS[b.symbol];
+      if (!ea || !eb) continue;
+
       if (isIonicBond(bond)) {
-        const a = atomById.get(bond.a), b = atomById.get(bond.b);
-        if (a && b) {
-          const qa = Number(a.charge || 0), qb = Number(b.charge || 0);
-          if (!qa || !qb || Math.sign(qa) === Math.sign(qb)) errors.push('An ionic interaction requires oppositely charged ions.');
+        const qa = Number(a.charge || 0), qb = Number(b.charge || 0);
+        if (!qa || !qb || Math.sign(qa) === Math.sign(qb)) {
+          addBondError('An ionic interaction requires explicitly opposite, non-zero charges.',bond);
+          continue;
+        }
+        if (Boolean(ea.metal) === Boolean(eb.metal)) {
+          addBondError('Strict ionic mode requires one positively charged metal and one negatively charged nonmetal ion.',bond);
+          continue;
+        }
+        const metalAtom = ea.metal ? a : b;
+        const nonmetalAtom = ea.metal ? b : a;
+        if (Number(metalAtom.charge || 0) <= 0 || Number(nonmetalAtom.charge || 0) >= 0) {
+          addBondError('Ionic compounds require a positive metal cation and a negative nonmetal anion.',bond);
+        }
+      } else {
+        if (type === 'aromatic' || Math.abs(bondOrder(bond)-1.5) < 1e-9) {
+          addBondError('Aromaticity is a ring property, not a free-standing bond. Build a supported ring with alternating single and double bonds or load an aromatic preset.',bond);
+        }
+        if (ea.category === 'noble gas' || eb.category === 'noble gas') {
+          addBondError('Neutral noble-gas atoms do not form ordinary introductory Lewis bonds in strict mode.',bond);
+        }
+        if (ea.metal || eb.metal) {
+          const pair = `${a.symbol}–${b.symbol}`;
+          addBondError(`${pair} is not accepted as a generic covalent bond. Metal–metal, organometallic, and coordination bonding require compound-specific structural data.`,bond);
         }
       }
     }
+
     const adj = adjacencyMap(atoms,bonds);
     let hasOpenValence = false;
     for (const atom of atoms) {
       const el = ELEMENTS[atom.symbol];
       if (!el) { errors.push(`Unsupported element ${atom.symbol}.`); continue; }
       const neighbors = adj.get(atom.id) || [];
-      const covalentOrder = neighbors.filter(n => n.type !== 'ionic').reduce((s,n)=>s+n.order,0);
+      const covalentOrder = neighbors.filter(n => n.type !== 'ionic').reduce((sum,n)=>sum+n.order,0);
       const ionicNeighbors = neighbors.filter(n => n.type === 'ionic').length;
       const charge = Number(atom.charge || 0);
-      const allowed = valenceOptions(atom).slice().sort((a,b)=>a-b);
-      const max = allowed.length ? Math.max(...allowed) : 0;
-      const commonIon = covalentOrder === 0 && el.commonCharges.includes(charge) && charge !== 0;
-      let state = 'open';
-      let detail = '';
-      if (covalentOrder > max + 1e-9) {
+      const allowed = valenceOptions(atom).sort((a,b)=>a-b);
+      const chargeSupported = supportedChargeValues(atom).includes(charge);
+      const max = allowed.length ? Math.max(...allowed) : -Infinity;
+      let state = invalidAtomIds.has(atom.id) ? 'invalid' : 'open';
+      let detail = invalidAtomIds.has(atom.id) ? 'A connected bond violates strict structure rules.' : '';
+      let nonbonding = null;
+      let shellElectrons = null;
+
+      if (!chargeSupported) {
         state = 'invalid';
-        detail = `Bond order ${covalentOrder} exceeds allowed ${allowed.join(' or ')} at charge ${charge}.`;
-        errors.push(`${el.name} exceeds its supported valence.`);
-      } else if (commonIon && (ionicNeighbors > 0 || atoms.length === 1)) {
-        state = 'satisfied'; detail = 'Common monatomic ion configuration.';
-      } else if (allowed.some(v => Math.abs(v-covalentOrder) < 1e-9)) {
-        state = 'satisfied'; detail = 'Supported valence is satisfied.';
-      } else {
-        hasOpenValence = true;
-        const next = allowed.find(v => v > covalentOrder);
-        detail = next == null ? 'Unusual coordination state.' : `${next-covalentOrder} additional bond-order unit${next-covalentOrder === 1 ? '' : 's'} available.`;
-        if (el.flexible) warnings.push(`${el.name} coordination is condition-dependent; this model checks common introductory states only.`);
+        detail = `${el.name} charge ${engineChargeText(charge)} is not supported by this Lewis/ionic model.`;
+        errors.push(detail);
       }
-      let nonbonding = el.valenceElectrons - charge - covalentOrder;
-      let shellElectrons = 2*covalentOrder + nonbonding;
-      if (nonbonding < -1e-9) {
-        state = 'invalid'; errors.push(`${el.name} has an impossible formal-charge/bond combination.`);
+
+      if (el.category === 'noble gas') {
+        if (charge !== 0 || neighbors.length) {
+          state = 'invalid';
+          detail = `${el.name} is treated as a neutral closed-shell atom and cannot be bonded in strict introductory mode.`;
+          errors.push(detail);
+        } else if (state !== 'invalid') {
+          state = 'satisfied';
+          detail = `Closed ${atom.symbol === 'He' ? 'duet' : 'octet'} shell.`;
+          nonbonding = el.valenceElectrons;
+          shellElectrons = el.valenceElectrons;
+        }
+        atomStates.push({ atomId:atom.id, symbol:atom.symbol, charge, covalentOrder, ionicNeighbors, allowed, state, detail, inferredNonbondingElectrons:nonbonding, shellElectrons });
+        continue;
       }
-      const shellTarget = atom.symbol === 'H' ? 2 : atom.symbol === 'B' ? 6 : 8;
-      if (state === 'satisfied' && !el.expandedOctet && !el.flexible && !commonIon && shellElectrons + 1e-9 < shellTarget) {
-        warnings.push(`${el.name} does not reach its usual ${shellTarget === 2 ? 'duet' : 'octet'} under the selected formal charge.`);
+
+      if (el.metal) {
+        if (covalentOrder > 1e-9) {
+          state = 'invalid';
+          detail = `${el.name} has a generic covalent bond, which strict mode does not certify.`;
+          errors.push(detail);
+        } else if (charge < 0 || (charge > 0 && !el.commonCharges.includes(charge))) {
+          state = 'invalid';
+          detail = `${el.name} charge ${engineChargeText(charge)} is not a supported common cation state.`;
+          errors.push(detail);
+        } else if (ionicNeighbors && charge <= 0) {
+          state = 'invalid';
+          detail = `${el.name} must carry a positive ionic charge before an ionic interaction is valid.`;
+          errors.push(detail);
+        } else if (state !== 'invalid' && charge > 0) {
+          state = 'satisfied';
+          detail = ionicNeighbors ? `Supported ${el.name} cation participating in ionic interactions.` : `Supported isolated ${el.name} cation.`;
+        } else if (state !== 'invalid') {
+          state = 'open';
+          detail = 'Neutral metal atom. Use Auto or Ionic mode with a supported nonmetal ion; strict mode will assign a common cation charge.';
+          hasOpenValence = true;
+        }
+        atomStates.push({ atomId:atom.id, symbol:atom.symbol, charge, covalentOrder, ionicNeighbors, allowed, state, detail, inferredNonbondingElectrons:null, shellElectrons:null });
+        continue;
       }
+
+      const commonIon = chargeSupported && covalentOrder === 0 && charge !== 0 && el.commonCharges.includes(charge) && allowed.some(v=>Math.abs(v)<1e-9);
+      if (chargeSupported) {
+        if (covalentOrder > max + 1e-9) {
+          state = 'invalid';
+          detail = `${el.name} with charge ${engineChargeText(charge)} permits covalent bond order ${allowed.join(' or ') || '0'}, not ${covalentOrder}.`;
+          errors.push(detail);
+        } else if (state !== 'invalid' && commonIon) {
+          state = 'satisfied';
+          detail = 'Supported monatomic ion with a filled shell.';
+        } else if (state !== 'invalid' && allowed.some(v => Math.abs(v-covalentOrder) < 1e-9)) {
+          state = 'satisfied';
+          detail = 'Supported formal-charge and bond-order combination.';
+        } else if (state !== 'invalid') {
+          state = 'open';
+          const next = allowed.find(v => v > covalentOrder + 1e-9);
+          detail = next == null ? 'No complete common Lewis state matches this partial structure.' : `${next-covalentOrder} additional covalent bond-order unit${Math.abs(next-covalentOrder-1)<1e-9?'':'s'} required for the next supported state.`;
+          hasOpenValence = true;
+        }
+
+        nonbonding = el.valenceElectrons - charge - covalentOrder;
+        if (!Number.isFinite(nonbonding) || Math.abs(nonbonding-Math.round(nonbonding)) > 1e-9 || nonbonding < -1e-9) {
+          state = 'invalid';
+          detail = `${el.name} has an impossible formal-charge, lone-electron, and bond-order combination.`;
+          errors.push(detail);
+        } else {
+          nonbonding = Math.round(nonbonding);
+          shellElectrons = 2*covalentOrder + nonbonding;
+          const shellMaximum = atom.symbol === 'H' ? 2 : (el.atomicNumber <= 10 ? 8 : null);
+          if (shellMaximum != null && shellElectrons > shellMaximum + 1e-9) {
+            state = 'invalid';
+            detail = `${el.name} would contain ${shellElectrons} electrons in a shell that can hold at most ${shellMaximum}.`;
+            errors.push(detail);
+          }
+          const usualTarget = atom.symbol === 'H' ? 2 : atom.symbol === 'B' ? 6 : (el.atomicNumber <= 10 ? 8 : null);
+          if (state === 'satisfied' && !commonIon && usualTarget != null && shellElectrons < usualTarget - 1e-9) {
+            state = 'open';
+            hasOpenValence = true;
+            warnings.push(`${el.name} is electron-deficient (${shellElectrons}/${usualTarget} shell electrons); the structure is a reactive or incomplete Lewis species, not a closed-shell molecule.`);
+          }
+        }
+      }
+
+      if (state === 'open') hasOpenValence = true;
       atomStates.push({ atomId:atom.id, symbol:atom.symbol, charge, covalentOrder, ionicNeighbors, allowed, state, detail, inferredNonbondingElectrons:nonbonding, shellElectrons });
     }
+
     const components = connectedComponents(atoms,bonds);
-    if (components.length > 1) warnings.push(`The canvas contains ${components.length} disconnected components; treat it as a mixture unless the components are separate ions.`);
+    for (const ids of components) {
+      const idSet = new Set(ids);
+      const componentBonds = bonds.filter(b=>idSet.has(b.a)&&idSet.has(b.b));
+      if (componentBonds.some(isIonicBond)) {
+        const componentCharge = atoms.filter(a=>idSet.has(a.id)).reduce((sum,a)=>sum+Number(a.charge||0),0);
+        if (componentCharge !== 0) {
+          hasOpenValence = true;
+          warnings.push(`An ionic assembly has net charge ${engineChargeText(componentCharge)}. Add the required counterion ratio for a neutral formula unit, or treat it explicitly as a charged species.`);
+        }
+      }
+    }
+    if (components.length > 1) warnings.push(`The canvas contains ${components.length} disconnected components; treat it as a mixture unless the components are intentionally separate ions.`);
     const totalValenceElectrons = atoms.reduce((sum,a)=>sum+(ELEMENTS[a.symbol]?.valenceElectrons || 0),0) - graphCharge(atoms);
-    if (atoms.length && totalValenceElectrons % 2 !== 0) warnings.push('The total valence-electron count is odd, so the structure may be a radical.');
+    if (atoms.length && totalValenceElectrons % 2 !== 0) {
+      hasOpenValence = true;
+      warnings.push('The total valence-electron count is odd, so the structure is a radical or an incomplete electron assignment.');
+    }
     const status = errors.length ? 'invalid' : hasOpenValence ? 'open' : 'valid';
     return {
-      status, valid:status !== 'invalid', closedShell:status === 'valid', errors:[...new Set(errors)], warnings:[...new Set(warnings)], atomStates,
-      formula:graphFormula(atoms), counts:graphCounts(atoms), charge:graphCharge(atoms), mass:Object.entries(graphCounts(atoms)).reduce((s,[k,v])=>s+ELEMENTS[k].mass*v,0),
+      status, valid:status === 'valid', closedShell:status === 'valid', errors:[...new Set(errors)], warnings:[...new Set(warnings)], atomStates,
+      formula:graphFormula(atoms), counts:graphCounts(atoms), charge:graphCharge(atoms), mass:Object.entries(graphCounts(atoms)).reduce((sum,[symbol,count])=>sum+ELEMENTS[symbol].mass*count,0),
       components, totalValenceElectrons
     };
   }
 
-  function suggestIonicCharges(atomA, atomB) {
+  function chargeCandidateFor(atom, atoms, bonds, sign) {
+    const el = ELEMENTS[atom.symbol];
+    const current = Number(atom.charge || 0);
+    if (!el) return {ok:false,reason:'Unsupported element.'};
+    if (current && Math.sign(current) !== sign) return {ok:false,reason:`${el.name} already carries the wrong charge sign for this ionic role.`};
+    const order = atomCovalentOrder(atom.id,bonds);
+    const values = supportedChargeValues(atom).filter(q=>Math.sign(q)===sign);
+    const fitting = values.filter(q=>(el.valences[String(q)]||[]).some(v=>Math.abs(v-order)<1e-9));
+    if (current) {
+      if (fitting.includes(current)) return {ok:true,charge:current};
+      return {ok:false,reason:`${el.name} charge ${engineChargeText(current)} is incompatible with its current covalent bond order ${order}.`};
+    }
+    const preferred = fitting.sort((a,b)=>{
+      const ac = el.commonCharges.includes(a) ? 0 : 1;
+      const bc = el.commonCharges.includes(b) ? 0 : 1;
+      return ac-bc || Math.abs(a)-Math.abs(b);
+    })[0];
+    if (preferred == null) return {ok:false,reason:`${el.name} with covalent bond order ${order} cannot be converted into a supported ${sign>0?'cation':'anion'} without changing its structure.`};
+    return {ok:true,charge:preferred};
+  }
+
+  function suggestIonicCharges(atomA, atomB, atoms, bonds) {
     const a = ELEMENTS[atomA.symbol], b = ELEMENTS[atomB.symbol];
-    if (!a || !b) return null;
-    let positive = null, negative = null;
-    if (a.metal && !b.metal) { positive = atomA; negative = atomB; }
-    else if (b.metal && !a.metal) { positive = atomB; negative = atomA; }
-    else return null;
-    const posEl = ELEMENTS[positive.symbol], negEl = ELEMENTS[negative.symbol];
-    const posCharge = posEl.commonCharges.find(c => c > 0);
-    const negCharge = negEl.commonCharges.find(c => c < 0);
-    if (!posCharge || !negCharge) return null;
-    return { [positive.id]:posCharge, [negative.id]:negCharge };
+    if (!a || !b) return {ok:false,reason:'Unsupported element.'};
+    if (Boolean(a.metal) === Boolean(b.metal)) return {ok:false,reason:'Strict ionic mode requires one metal and one nonmetal.'};
+    const positive = a.metal ? atomA : atomB;
+    const negative = a.metal ? atomB : atomA;
+    if (atomCovalentOrder(positive.id,bonds) > 1e-9) return {ok:false,reason:'The metal already has a generic covalent bond, which strict mode does not certify.'};
+    const pos = chargeCandidateFor(positive,atoms,bonds,1);
+    if (!pos.ok) return pos;
+    const neg = chargeCandidateFor(negative,atoms,bonds,-1);
+    if (!neg.ok) return neg;
+    const updates = {};
+    if (Number(positive.charge||0) !== pos.charge) updates[positive.id] = pos.charge;
+    if (Number(negative.charge||0) !== neg.charge) updates[negative.id] = neg.charge;
+    return {ok:true,updates};
+  }
+
+  function canSetAtomCharge(atoms,bonds,atomId,charge) {
+    const atom = atoms.find(a=>a.id===atomId);
+    if (!atom) return {ok:false,reason:'Atom not found.'};
+    charge = Number(charge);
+    if (!supportedChargeValues(atom).includes(charge)) {
+      return {ok:false,reason:`${ELEMENTS[atom.symbol].name} charge ${engineChargeText(charge)} is outside the supported strict Lewis/ionic states.`};
+    }
+    const copies = atoms.map(a=>a.id===atomId?{...a,charge}:{...a});
+    const validation = validateGraph(copies,bonds);
+    const atomState = validation.atomStates.find(s=>s.atomId===atomId);
+    if (!atomState || atomState.state === 'invalid') return {ok:false,reason:atomState?.detail || validation.errors[0] || 'That charge is incompatible with the current structure.',validation};
+    return {ok:true,validation,atomState};
   }
 
   function canApplyBond(atoms, bonds, aId, bId, type) {
@@ -754,24 +927,28 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     if (!a || !b) return { ok:false, reason:'Atom not found.' };
     const bondType = BOND_TYPES[type];
     if (!bondType) return { ok:false, reason:'Unknown bond type.' };
+    const ea = ELEMENTS[a.symbol], eb = ELEMENTS[b.symbol];
+    if (type === 'aromatic') return {ok:false,reason:'Aromaticity is a ring-level property. Build alternating single/double bonds or load a validated aromatic preset.'};
+    if (type !== 'ionic') {
+      if (ea?.category === 'noble gas' || eb?.category === 'noble gas') return {ok:false,reason:'Neutral noble gases have filled shells and no ordinary Lewis bonding site in strict mode.'};
+      if (ea?.metal || eb?.metal) return {ok:false,reason:`A bare ${a.symbol}–${b.symbol} covalent bond is not certified. Use ionic mode for supported salts; advanced metal bonding needs compound-specific coordination or crystal data.`};
+    }
+
     let chargeUpdates = null;
     const atomCopies = atoms.map(x=>({...x}));
     if (type === 'ionic') {
-      const ca = Number(a.charge || 0), cb = Number(b.charge || 0);
-      if (!ca || !cb) {
-        chargeUpdates = suggestIonicCharges(a,b);
-        if (!chargeUpdates) return { ok:false, reason:'Ionic interactions require a typical metal cation and nonmetal anion, or manually assigned opposite charges.' };
-        atomCopies.forEach(x => { if (chargeUpdates[x.id] != null) x.charge = chargeUpdates[x.id]; });
-      }
-      const aa = atomCopies.find(x=>x.id===aId), bb = atomCopies.find(x=>x.id===bId);
-      if (Math.sign(Number(aa.charge||0)) === Math.sign(Number(bb.charge||0))) return { ok:false, reason:'Ionic interactions require opposite charges.' };
+      const suggestion = suggestIonicCharges(a,b,atomCopies,bonds);
+      if (!suggestion.ok) return {ok:false,reason:suggestion.reason};
+      chargeUpdates = suggestion.updates;
+      atomCopies.forEach(x=>{ if (Object.prototype.hasOwnProperty.call(chargeUpdates,x.id)) x.charge=chargeUpdates[x.id]; });
     }
     const remaining = bonds.filter(x => !((x.a===aId&&x.b===bId)||(x.a===bId&&x.b===aId)));
     remaining.push({a:aId,b:bId,type,order:bondType.order});
     const validation = validateGraph(atomCopies,remaining);
-    const invalidIds = new Set(validation.atomStates.filter(s=>s.state==='invalid').map(s=>s.atomId));
-    if (invalidIds.has(aId) || invalidIds.has(bId)) return { ok:false, reason:validation.errors[0] || 'That bond exceeds a supported valence.' };
-    return {ok:true, chargeUpdates, validation};
+    const pairStates = validation.atomStates.filter(s=>s.atomId===aId||s.atomId===bId);
+    const pairInvalid = pairStates.find(s=>s.state==='invalid');
+    if (validation.errors.length || pairInvalid) return {ok:false,reason:pairInvalid?.detail || validation.errors[0] || 'That bond violates strict chemistry rules.',validation};
+    return {ok:true,chargeUpdates,validation};
   }
 
   function wlColors(atoms,bonds) {
@@ -833,6 +1010,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 
   function identifyGraph(graph, library) {
     const validation = validateGraph(graph.atoms,graph.bonds);
+    if (validation.status === 'invalid') return { key:null, name:'Rejected structure', formula:validation.formula, molecule:null };
     for (const molecule of Object.values(library || {})) {
       if (molecule.atoms.length !== graph.atoms.length || molecule.bonds.length !== graph.bonds.length) continue;
       if (areGraphsIsomorphic(graph,molecule)) return { key:molecule.key, name:molecule.name, formula:molecule.formula || validation.formula, molecule };
@@ -1172,18 +1350,56 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   function runSelfTests() {
     const results=[];
     function test(name,fn){try{fn();results.push({name,ok:true});}catch(error){results.push({name,ok:false,error:error.message});}}
+    function expectStatus(name,atoms,bonds,status){const v=validateGraph(atoms,bonds);if(v.status!==status)throw new Error(`${name}: expected ${status}, received ${v.status}: ${v.errors[0]||v.warnings[0]||'no detail'}`);return v;}
+
     test('Formula parser handles parentheses',()=>{const p=parseFormula('Al2(SO4)3');if(p.counts.Al!==2||p.counts.S!==3||p.counts.O!==12)throw new Error('Wrong counts');});
     test('Water equation balances',()=>{const r=balanceEquation(['H2','O2'],['H2O']);if(equationPlain(r)!=='2H2 + O2 → 2H2O')throw new Error(equationPlain(r));});
     test('Ethane combustion balances',()=>{const r=balanceEquation(['C2H6','O2'],['CO2','H2O']);if(equationPlain(r)!=='2C2H6 + 7O2 → 4CO2 + 6H2O')throw new Error(equationPlain(r));});
     test('Neutralization predicts salt and water',()=>{const r=predictReaction(['HCl','NaOH']);if(!r.supported||r.equation!=='HCl + NaOH → NaCl + H2O')throw new Error(r.reason||r.equation);});
     test('Precipitation rule predicts AgCl',()=>{const r=predictReaction(['AgNO3','NaCl']);if(!r.supported||!r.products.includes('AgCl'))throw new Error(r.reason||'Missing AgCl');});
+
+    test('Neutral water is a valid closed-shell structure',()=>{
+      expectStatus('water',[{id:1,symbol:'O',charge:0},{id:2,symbol:'H',charge:0},{id:3,symbol:'H',charge:0}],[{a:1,b:2,type:'single',order:1},{a:1,b:3,type:'single',order:1}],'valid');
+    });
+    test('Oxide with two O–H bonds is rejected',()=>{
+      expectStatus('bad oxide-water hybrid',[{id:1,symbol:'O',charge:-2},{id:2,symbol:'H',charge:0},{id:3,symbol:'H',charge:0}],[{a:1,b:2,type:'single',order:1},{a:1,b:3,type:'single',order:1}],'invalid');
+    });
+    test('Hydroxide has one O–H bond and charge −1',()=>{
+      expectStatus('hydroxide',[{id:1,symbol:'O',charge:-1},{id:2,symbol:'H',charge:0}],[{a:1,b:2,type:'single',order:1}],'valid');
+    });
+    test('Oxide ion has charge −2 and zero covalent bonds',()=>{
+      expectStatus('oxide',[{id:1,symbol:'O',charge:-2}],[],'valid');
+    });
+    test('Sn(OH)2 ionic/covalent graph is valid',()=>{
+      expectStatus('tin(II) hydroxide',[
+        {id:1,symbol:'Sn',charge:2},{id:2,symbol:'O',charge:-1},{id:3,symbol:'H',charge:0},{id:4,symbol:'O',charge:-1},{id:5,symbol:'H',charge:0}
+      ],[
+        {a:1,b:2,type:'ionic',order:0},{a:2,b:3,type:'single',order:1},{a:1,b:4,type:'ionic',order:0},{a:4,b:5,type:'single',order:1}
+      ],'valid');
+    });
+    test('Bare Mn–Sn covalent bond is rejected',()=>{
+      expectStatus('metal-metal',[{id:1,symbol:'Mn',charge:0},{id:2,symbol:'Sn',charge:0}],[{a:1,b:2,type:'single',order:1}],'invalid');
+    });
+    test('He–Ne bond is rejected',()=>{
+      expectStatus('noble gases',[{id:1,symbol:'He',charge:0},{id:2,symbol:'Ne',charge:0}],[{a:1,b:2,type:'single',order:1}],'invalid');
+    });
+    test('NaCl ionic graph is valid',()=>{
+      expectStatus('sodium chloride',[{id:1,symbol:'Na',charge:1},{id:2,symbol:'Cl',charge:-1}],[{a:1,b:2,type:'ionic',order:0}],'valid');
+    });
+    test('Arbitrary aromatic edge is rejected',()=>{
+      expectStatus('aromatic edge',[{id:1,symbol:'C',charge:0},{id:2,symbol:'C',charge:0}],[{a:1,b:2,type:'aromatic',order:1.5}],'invalid');
+    });
+    test('Water oxygen cannot be changed to oxide charge',()=>{
+      const atoms=[{id:1,symbol:'O',charge:0},{id:2,symbol:'H',charge:0},{id:3,symbol:'H',charge:0}],bonds=[{a:1,b:2,type:'single',order:1},{a:1,b:3,type:'single',order:1}];
+      const r=canSetAtomCharge(atoms,bonds,1,-2);if(r.ok)throw new Error('Invalid charge change was accepted');
+    });
     return results;
   }
 
   return {
     ELEMENTS,BOND_TYPES,CATIONS,ANIONS,ACIDS,KNOWN_NAMES,
     parseFormula,hillFormula,formulaWithCharge,molarMass,empiricalFormula,countSignature,compositionKey,knownName,
-    graphCounts,graphCharge,graphFormula,validateGraph,canApplyBond,connectedComponents,identifyGraph,areGraphsIsomorphic,degreeOfUnsaturation,toMolfile,
+    graphCounts,graphCharge,graphFormula,supportedChargeValues,validateGraph,canSetAtomCharge,canApplyBond,connectedComponents,identifyGraph,areGraphsIsomorphic,degreeOfUnsaturation,toMolfile,
     balanceEquation,equationPlain,combineIons,inferIonicCompound,classifySpecies,solubility,predictReaction,splitEquation,runSelfTests,
     _internals:{Fraction,nullspaceBasis,findPositiveNullVector,IONIC_COMPOUNDS,EXACT_REACTIONS}
   };
@@ -1282,9 +1498,10 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   add(make('NaCl','Sodium chloride','NaCl',[['Na',-58,0,1],['Cl',58,0,-1]],[[0,1,'ionic']],'Ionic compounds'));
   add(make('CaCl2','Calcium chloride','CaCl2',[['Ca',0,0,2],['Cl',-95,20,-1],['Cl',95,20,-1]],[[0,1,'ionic'],[0,2,'ionic']],'Ionic compounds'));
   add(make('MgO','Magnesium oxide','MgO',[['Mg',-58,0,2],['O',58,0,-2]],[[0,1,'ionic']],'Ionic compounds'));
+  add(make('SnOH2','Tin(II) hydroxide','Sn(OH)2',[['Sn',0,-10,2],['O',-90,18,-1],['H',-158,54,0],['O',90,18,-1],['H',158,54,0]],[[0,1,'ionic'],[1,2,'single'],[0,3,'ionic'],[3,4,'single']],'Ionic compounds'));
 
   const VISIBLE_PRESETS = [
-    'H2O','CO2','CH4','NH3','O2','N2','H2O2','O3','C2H6','C2H4','C2H2','CH3OH','C2H5OH','CH3COOH','C6H6','SO2','NaCl','CaCl2'
+    'H2O','CO2','CH4','NH3','O2','N2','H2O2','O3','C2H6','C2H4','C2H2','CH3OH','C2H5OH','CH3COOH','C6H6','SO2','NaCl','CaCl2','SnOH2'
   ];
 
   const QUICK_SPECIES = [
@@ -1377,11 +1594,14 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   }
 
   function availableInteractionSites(atom, atomState) {
-    if(!atom||!atomState)return 0;
+    if(!atom||!atomState||atomState.state==='invalid')return 0;
     const el=E.ELEMENTS[atom.symbol];
     if(el?.category==='noble gas')return 0;
-    if(Number(atom.charge||0)!==0&&(state.bondType==='ionic'||state.bondType==='auto'))return 1;
-    return remainingBondCapacity(atom,atomState);
+    const ionicMode=state.bondType==='ionic'||state.bondType==='auto';
+    if(el?.metal)return ionicMode?1:0;
+    const covalent=remainingBondCapacity(atom,atomState);
+    if(Number(atom.charge||0)<0&&ionicMode&&covalent===0)return 1;
+    return covalent;
   }
 
   function atomStateDeficit(atomState) {
@@ -1419,11 +1639,14 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     if(ea?.category==='noble gas'||eb?.category==='noble gas'){
       return {ok:false,type:null,automatic:true,reason:explainBondFailure(aId,bId)};
     }
+    if(ea?.metal&&eb?.metal){
+      return {ok:false,type:null,automatic:true,reason:`A bare ${a.symbol}–${b.symbol} bond is not a generic Lewis bond. Intermetallic structures require compound-specific crystal data, so strict mode blocks it.`};
+    }
     if((ea?.metal&&!eb?.metal)||(eb?.metal&&!ea?.metal)){
       const ionic=E.canApplyBond(state.atoms,state.bonds,aId,bId,'ionic');
-      if(ionic.ok)return {...ionic,type:'ionic',automatic:true};
+      return ionic.ok?{...ionic,type:'ionic',automatic:true}:{...ionic,type:null,automatic:true};
     }
-    const trialTypes=(ea?.metal&&eb?.metal)?['single']:['single','double','triple'];
+    const trialTypes=['single','double','triple'];
     const candidates=[];
     let firstReason='No supported bond order fits both atoms.';
     for(const type of trialTypes){
@@ -1454,27 +1677,33 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     if(!data){
       const sourceId=state.bondDrag?.sourceId||state.pendingBondAtomId;
       if(!state.atoms.length){
-        data={kind:'info',title:'Add or select an atom',text:'Glowing dots are available bonding electrons. Drag one onto a compatible atom.'};
+        data={kind:'info',title:'Add or select an atom',text:'Glowing dots are permitted interaction sites. Strict mode hides or blocks chemically unsupported connections.'};
       }else if(sourceId){
-        const atom=getAtom(sourceId);
-        data={kind:'ready',title:`Connecting from ${atom?.symbol||'atom'}`,text:`Release on a green atom. ${bondLabel(state.bondType)} mode is active.`};
+        const atom=getAtom(sourceId),el=atom&&E.ELEMENTS[atom.symbol];
+        data=el?.metal
+          ? {kind:'ready',title:`Ionic interaction from ${atom.symbol}`,text:'Release on a green compatible nonmetal. Bare metal–metal and generic metal covalent bonds are blocked.'}
+          : {kind:'ready',title:`Connecting from ${atom?.symbol||'atom'}`,text:`Release on a green atom. ${bondLabel(state.bondType)} mode is active.`};
       }else if(state.selectedAtomId){
         const atom=getAtom(state.selectedAtomId),el=atom&&E.ELEMENTS[atom.symbol];
         const atomState=validation.atomStates.find(x=>x.atomId===state.selectedAtomId);
         const capacity=availableInteractionSites(atom,atomState);
-        if(el?.category==='noble gas')data={kind:'closed',title:`${el.name}: full valence shell`,text:`${atom.symbol==='He'?'2':'8'} valence electrons are already paired. No ordinary bond handle is shown.`};
-        else if(capacity>0)data={kind:'ready',title:`${el.name}: ${capacity} bondable electron${capacity===1?'':'s'}`,text:'Drag any glowing green dot to another atom. Auto mode chooses the most compatible bond order.'};
-        else data={kind:'closed',title:`${el?.name||'Atom'}: current valence complete`,text:'No normal bond handle is available unless the charge or existing bonding state changes.'};
+        if(atomState?.state==='invalid')data={kind:'error',title:`${el?.name||'Atom'}: rejected state`,text:atomState.detail||'Remove the invalid bond or choose a compatible charge.'};
+        else if(el?.category==='noble gas')data={kind:'closed',title:`${el.name}: full valence shell`,text:`${atom.symbol==='He'?'2':'8'} valence electrons are already paired. No ordinary bond handle is shown.`};
+        else if(el?.metal&&capacity>0)data={kind:'ready',title:`${el.name}: ionic-only interaction`,text:'Drag the site to a supported nonmetal. Strict mode assigns or checks a common positive ion charge; metal–metal bonds are not guessed.'};
+        else if(el?.metal)data={kind:'closed',title:`${el.name}: covalent mode unavailable`,text:'Switch to Auto or Ionic for common salts. Coordination and intermetallic chemistry require compound-specific data.'};
+        else if(Number(atom?.charge||0)<0&&capacity>0&&(state.bondType==='auto'||state.bondType==='ionic'))data={kind:'ready',title:`${el.name}: anionic interaction site`,text:'Drag to a compatible positive metal ion. Existing covalent bonds and formal charge must remain electron-consistent.'};
+        else if(capacity>0)data={kind:'ready',title:`${el.name}: ${capacity} covalent site${capacity===1?'':'s'}`,text:'Drag a glowing green dot to another compatible nonmetal. Auto mode selects a permitted bond order.'};
+        else data={kind:'closed',title:`${el?.name||'Atom'}: current state complete`,text:'No permitted interaction is available in the selected mode. Change the structure only through a supported charge or bond state.'};
       }else{
         const onlyNeutralNoble=state.atoms.every(a=>E.ELEMENTS[a.symbol].category==='noble gas'&&!Number(a.charge||0));
         data=onlyNeutralNoble
-          ? {kind:'closed',title:'These atoms have filled shells',text:'Neutral helium and neon cannot form a normal stable bond. Try H + H, O + H, or C + H to see bondable electrons.'}
-          : {kind:'info',title:'Select an atom or drag a glowing dot',text:'Dark paired dots are nonbonding electrons. Green dots can start a bond.'};
+          ? {kind:'closed',title:'These atoms have filled shells',text:'Neutral helium and neon cannot form a normal stable bond. Try H + H, O + H, or a metal + halogen.'}
+          : {kind:'info',title:'Select an atom or drag a permitted site',text:'Dark dots are nonbonding electrons. Green sites are shown only where the strict model can evaluate the attempted interaction.'};
       }
     }
     const iconClass=data.kind==='ready'?'ready':data.kind==='error'?'error':data.kind==='closed'?'closed':'';
     const icon=data.kind==='error'?'×':data.kind==='closed'?'✓':data.kind==='ready'?'2':'1';
-    guide.innerHTML=`<div class="guide-icon ${iconClass}">${icon}</div><div class="guide-copy"><strong>${escapeHtml(data.title)}</strong><span>${escapeHtml(data.text)}</span></div><div class="guide-legend" aria-hidden="true"><span><i class="legend-electron"></i> nonbonding electron</span><span><i class="legend-site"></i> bondable electron</span><span><i class="legend-closed"></i> full shell</span></div>`;
+    guide.innerHTML=`<div class="guide-icon ${iconClass}">${icon}</div><div class="guide-copy"><strong>${escapeHtml(data.title)}</strong><span>${escapeHtml(data.text)}</span></div><div class="guide-legend" aria-hidden="true"><span><i class="legend-electron"></i> nonbonding electron</span><span><i class="legend-site"></i> permitted site</span><span><i class="legend-closed"></i> blocked / complete</span></div>`;
   }
 
   function addAtom(symbol,x,y,record=true) {
@@ -1528,8 +1757,14 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     const sites=availableInteractionSites(atom,atomState);state.selectedAtomId=id;
     if(!sites){
       const el=E.ELEMENTS[atom.symbol];
-      const message=el.category==='noble gas'?`${el.name} has a filled valence shell, so it has no ordinary bonding electron to drag.`:`${el.name}'s current valence is complete; no normal bonding site is available.`;
-      state.pendingBondAtomId=null;state.bondDrag=null;setGuide('No bonding site',message,'error');render();showToast(message,'error');return false;
+      const message=el.category==='noble gas'
+        ? `${el.name} has a filled valence shell, so it has no ordinary bonding electron to drag.`
+        : el.metal
+          ? `${el.name} cannot use a generic covalent bond in strict mode. Switch to Auto or Ionic and connect it to a supported nonmetal ion.`
+          : atomState?.state==='invalid'
+            ? (atomState.detail||'Fix the rejected charge or bond state first.')
+            : `${el.name}'s current Lewis state has no permitted interaction in this mode.`;
+      state.pendingBondAtomId=null;state.bondDrag=null;setGuide('No permitted site',message,'error');render();showToast(message,'error');return false;
     }
     clearGuide();state.pendingBondAtomId=id;
     if(ev){ev.preventDefault();ev.stopPropagation();const rect=workspace.getBoundingClientRect();state.bondDrag={sourceId:id,x:ev.clientX-rect.left,y:ev.clientY-rect.top,startX:ev.clientX,startY:ev.clientY,moved:false};}
@@ -1579,29 +1814,66 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   }
 
   function renderAtoms(validation) {
-    const stateById=new Map(validation.atomStates.map(s=>[s.atomId,s]));const sourceId=state.bondDrag?.sourceId||state.pendingBondAtomId;atomLayer.innerHTML='';
+    const stateById=new Map(validation.atomStates.map(s=>[s.atomId,s]));
+    const sourceId=state.bondDrag?.sourceId||state.pendingBondAtomId;
+    atomLayer.innerHTML='';
     for(const atom of state.atoms){
-      const e=E.ELEMENTS[atom.symbol],atomState=stateById.get(atom.id),covalentSites=remainingBondCapacity(atom,atomState),interactionSites=availableInteractionSites(atom,atomState);
+      const e=E.ELEMENTS[atom.symbol],atomState=stateById.get(atom.id);
+      const covalentSites=remainingBondCapacity(atom,atomState),interactionSites=availableInteractionSites(atom,atomState);
       const cluster=document.createElement('div');cluster.className='atom-cluster';cluster.dataset.id=atom.id;cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;
-      if(state.selectedAtomId===atom.id)cluster.classList.add('selected');if(state.pendingBondAtomId===atom.id)cluster.classList.add('pending');if(interactionSites===0)cluster.classList.add('closed-shell');
-      if(sourceId&&sourceId!==atom.id){const resolution=resolveBondRequest(sourceId,atom.id,state.bondType);cluster.classList.add(resolution.ok?'compatible':'incompatible');cluster.dataset.compatible=resolution.ok?'true':'false';}
+      if(state.selectedAtomId===atom.id)cluster.classList.add('selected');
+      if(state.pendingBondAtomId===atom.id)cluster.classList.add('pending');
+      if(interactionSites===0)cluster.classList.add('closed-shell');
+      if(sourceId&&sourceId!==atom.id){
+        const resolution=resolveBondRequest(sourceId,atom.id,state.bondType);
+        cluster.classList.add(resolution.ok?'compatible':'incompatible');
+        cluster.dataset.compatible=resolution.ok?'true':'false';
+      }
       const ring=document.createElement('span');ring.className='valence-ring';cluster.appendChild(ring);
-      const node=document.createElement('button');node.className='atom-node';if(atomState?.state==='invalid')node.classList.add('invalid');else if(atomState?.state==='open')node.classList.add('open');
-      node.style.background=e.color;node.style.color=e.text;node.dataset.id=atom.id;node.innerHTML=`<span>${escapeHtml(atom.symbol)}</span>${atom.charge?`<span class="atom-charge">${displayCharge(atom.charge)}</span>`:''}`;
-      if(e.category==='noble gas')node.title=`${e.name}: filled valence shell; no ordinary bond under normal conditions.`;else if(interactionSites)node.title=`${e.name}: ${interactionSites} available bonding site${interactionSites===1?'':'s'}. Drag a glowing dot.`;else node.title=`${e.name}: current valence complete. Double-click to delete.`;
-      node.addEventListener('click',ev=>{ev.stopPropagation();if(node._dragged)return;selectAtom(atom.id);});node.addEventListener('dblclick',ev=>{ev.stopPropagation();removeAtom(atom.id);});enableAtomDrag(node,cluster,atom);cluster.appendChild(node);
+      const node=document.createElement('button');node.className='atom-node';
+      if(atomState?.state==='invalid')node.classList.add('invalid');else if(atomState?.state==='open')node.classList.add('open');
+      node.style.background=e.color;node.style.color=e.text;node.dataset.id=atom.id;
+      node.innerHTML=`<span>${escapeHtml(atom.symbol)}</span>${atom.charge?`<span class="atom-charge">${displayCharge(atom.charge)}</span>`:''}`;
+      if(atomState?.state==='invalid')node.title=`Rejected: ${atomState.detail||'invalid chemistry state'}`;
+      else if(e.category==='noble gas')node.title=`${e.name}: filled valence shell; no ordinary bond under normal conditions.`;
+      else if(e.metal&&interactionSites)node.title=`${e.name}: strict mode permits only evaluated ionic interactions in the builder.`;
+      else if(interactionSites)node.title=`${e.name}: ${interactionSites} permitted interaction site${interactionSites===1?'':'s'}. Drag a glowing dot.`;
+      else node.title=`${e.name}: no permitted interaction in the selected mode. Double-click to delete.`;
+      node.addEventListener('click',ev=>{ev.stopPropagation();if(node._dragged)return;selectAtom(atom.id);});
+      node.addEventListener('dblclick',ev=>{ev.stopPropagation();removeAtom(atom.id);});
+      enableAtomDrag(node,cluster,atom);cluster.appendChild(node);
+
       const sideOrder=preferredSideOrder(atom),handleSides=sideOrder.slice(0,interactionSites);
-      const nonbondingRaw=Number(atomState?.inferredNonbondingElectrons ?? e.valenceElectrons-Number(atom.charge||0));const nonbonding=Math.max(0,Math.min(8,Math.round(nonbondingRaw)));const staticCount=Math.max(0,Math.min(8,nonbonding-covalentSites));
-      if(state.showLewisElectrons){
-        const staticSides=sideOrder.filter(x=>!handleSides.includes(x)).concat(handleSides);let remaining=staticCount,sideIndex=0;
-        while(remaining>0&&sideIndex<staticSides.length){const side=staticSides[sideIndex++],count=remaining>=2?2:1;remaining-=count;(count===2?[-4.5,4.5]:[0]).forEach(offset=>{const dot=document.createElement('span');dot.className='electron-dot';if(count===1&&interactionSites===0&&atomState?.state==='open')dot.classList.add('radical');positionAroundAtom(dot,side,offset,44);cluster.appendChild(dot);});}
+      const nonbondingRaw=Number(atomState?.inferredNonbondingElectrons);
+      const nonbonding=Number.isFinite(nonbondingRaw)?Math.max(0,Math.min(8,Math.round(nonbondingRaw))):0;
+      const staticCount=e.metal?0:Math.max(0,Math.min(8,nonbonding-covalentSites));
+      if(state.showLewisElectrons&&!e.metal){
+        const staticSides=sideOrder.filter(x=>!handleSides.includes(x)).concat(handleSides);
+        let remaining=staticCount,sideIndex=0;
+        while(remaining>0&&sideIndex<staticSides.length){
+          const side=staticSides[sideIndex++],count=remaining>=2?2:1;remaining-=count;
+          (count===2?[-4.5,4.5]:[0]).forEach(offset=>{
+            const dot=document.createElement('span');dot.className='electron-dot';
+            if(count===1&&interactionSites===0&&atomState?.state==='open')dot.classList.add('radical');
+            positionAroundAtom(dot,side,offset,44);cluster.appendChild(dot);
+          });
+        }
       }
       handleSides.forEach((side,index)=>{
-        const handle=document.createElement('button');handle.className='bond-handle';if(interactionSites>covalentSites)handle.classList.add('ionic');handle.type='button';handle.setAttribute('aria-label',`Start bond from ${e.name}, site ${index+1}`);
-        handle.title=state.bondType==='auto'?'Drag to another atom; auto mode chooses the bond.':`Drag to attempt a ${bondLabel(state.bondType).toLowerCase()}.`;positionAroundAtom(handle,side,0,47);
-        handle.addEventListener('pointerdown',ev=>beginBondFromAtom(atom.id,ev));handle.addEventListener('click',ev=>ev.stopPropagation());cluster.appendChild(handle);
+        const handle=document.createElement('button');handle.className='bond-handle';
+        const ionicVisual=state.bondType==='ionic'||e.metal||(Number(atom.charge||0)<0&&covalentSites===0);
+        if(ionicVisual)handle.classList.add('ionic');
+        handle.type='button';handle.setAttribute('aria-label',`Start permitted interaction from ${e.name}, site ${index+1}`);
+        if(e.metal)handle.title='Drag to a compatible nonmetal. Strict mode permits ionic interactions only for generic metal atoms.';
+        else if(state.bondType==='auto')handle.title='Drag to another atom; Auto mode chooses only a rule-supported interaction.';
+        else handle.title=`Drag to attempt a ${bondLabel(state.bondType).toLowerCase()}.`;
+        positionAroundAtom(handle,side,0,47);
+        handle.addEventListener('pointerdown',ev=>beginBondFromAtom(atom.id,ev));
+        handle.addEventListener('click',ev=>ev.stopPropagation());cluster.appendChild(handle);
       });
-      if(e.category==='noble gas'){const badge=document.createElement('span');badge.className='closed-shell-badge';badge.textContent=atom.symbol==='He'?'2 e⁻ · full shell':'8 e⁻ · full shell';cluster.appendChild(badge);}
+      if(e.category==='noble gas'){
+        const badge=document.createElement('span');badge.className='closed-shell-badge';badge.textContent=atom.symbol==='He'?'2 e⁻ · full shell':'8 e⁻ · full shell';cluster.appendChild(badge);
+      }
       atomLayer.appendChild(cluster);
     }
   }
@@ -1642,12 +1914,37 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   function renderInspector(validation) {
     const atom=getAtom(state.selectedAtomId);
     if(!atom){inspector.innerHTML='<p class="inspector-empty">Nothing selected. Click an atom in the workspace.</p>';return;}
-    const e=E.ELEMENTS[atom.symbol],atomState=validation.atomStates.find(x=>x.atomId===atom.id),neighborBonds=state.bonds.filter(b=>b.a===atom.id||b.b===atom.id),sites=availableInteractionSites(atom,atomState);
-    const shellTarget=(atom.symbol==='H'||atom.symbol==='He')?2:(e.flexible?null:8);const shellValue=Number(atomState?.shellElectrons);const shellText=shellTarget==null?'condition-dependent':`${Number.isFinite(shellValue)?Math.round(shellValue*10)/10:'—'} / ${shellTarget} e⁻`;
+    const e=E.ELEMENTS[atom.symbol];
+    const atomState=validation.atomStates.find(x=>x.atomId===atom.id);
+    const neighborBonds=state.bonds.filter(b=>b.a===atom.id||b.b===atom.id);
+    const sites=availableInteractionSites(atom,atomState);
+    let shellText='condition-dependent';
+    if(!e.metal){
+      const shellValue=Number(atomState?.shellElectrons);
+      const target=atom.symbol==='H'||atom.symbol==='He'?2:atom.symbol==='B'?'6–8':(e.atomicNumber<=10?8:null);
+      shellText=target==null?'expanded / condition-dependent':`${Number.isFinite(shellValue)?Math.round(shellValue*10)/10:'—'} / ${target} e⁻`;
+    }
+
     let callout='';
-    if(e.category==='noble gas')callout=`<div class="inspector-callout closed"><strong>Closed shell.</strong> ${escapeHtml(e.name)} already has its stable ${atom.symbol==='He'?'duet':'octet'}. No ordinary bond handle is available.</div>`;
-    else if(sites)callout=`<div class="inspector-callout ready"><strong>${sites} bondable electron${sites===1?'':'s'} available.</strong> Drag a glowing green dot. Current mode: ${escapeHtml(bondLabel(state.bondType))}.</div>`;
-    else callout='<div class="inspector-callout warning"><strong>Current valence is complete.</strong> Remove or change an existing bond, or adjust formal charge only when chemically justified.</div>';
+    if(atomState?.state==='invalid')callout=`<div class="inspector-callout error"><strong>Rejected chemistry state.</strong> ${escapeHtml(atomState.detail||validation.errors[0]||'Remove the invalid bond or select a compatible charge.')}</div>`;
+    else if(e.category==='noble gas')callout=`<div class="inspector-callout closed"><strong>Closed shell.</strong> ${escapeHtml(e.name)} already has its stable ${atom.symbol==='He'?'duet':'octet'}. No ordinary bond handle is available.</div>`;
+    else if(e.metal&&sites)callout=`<div class="inspector-callout ready"><strong>Ionic interaction available.</strong> Drag the purple site to a supported nonmetal. Generic covalent and metal–metal bonds are deliberately blocked.</div>`;
+    else if(e.metal)callout='<div class="inspector-callout warning"><strong>Metal covalent mode is disabled.</strong> Switch to Auto or Ionic for supported salts. Coordination and intermetallic structures need compound-specific data.</div>';
+    else if(Number(atom.charge||0)<0&&sites&&(state.bondType==='auto'||state.bondType==='ionic'))callout=`<div class="inspector-callout ready"><strong>Anionic interaction available.</strong> Drag the purple site to a compatible metal cation. The existing Lewis structure must remain charge-consistent.</div>`;
+    else if(sites)callout=`<div class="inspector-callout ready"><strong>${sites} permitted covalent site${sites===1?'':'s'}.</strong> Drag a glowing green dot. Current mode: ${escapeHtml(bondLabel(state.bondType))}.</div>`;
+    else callout='<div class="inspector-callout warning"><strong>No permitted interaction in this mode.</strong> Remove or change an existing bond, or choose one of the explicitly supported charge states below.</div>';
+
+    const currentCharge=Number(atom.charge||0);
+    const chargeButtons=E.supportedChargeValues(atom.symbol).map(q=>{
+      const check=E.canSetAtomCharge(state.atoms,state.bonds,atom.id,q);
+      const active=q===currentCharge?' active':'';
+      const disabled=!check.ok?' disabled':'';
+      const title=escapeHtml(check.ok?`Set charge to ${displayCharge(q)}`:check.reason);
+      return `<button class="charge-option${active}" data-set-charge="${q}"${disabled} title="${title}">${displayCharge(q)}</button>`;
+    }).join('');
+    const startLabel=e.metal?'Start ionic interaction':Number(atom.charge||0)<0&&remainingBondCapacity(atom,atomState)===0?'Start ionic interaction':`Start bond from ${escapeHtml(atom.symbol)}`;
+    const valenceText=e.metal?'Ionic-only in generic builder':(atomState?.allowed?.join(' / ')||'0');
+
     inspector.innerHTML=`
       <div class="inspector-row"><span>Element</span><strong>${escapeHtml(e.name)} (${atom.symbol})</strong></div>
       <div class="inspector-row"><span>Atomic number</span><strong>${e.atomicNumber}</strong></div>
@@ -1655,51 +1952,90 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
       <div class="inspector-row"><span>Category</span><strong>${escapeHtml(e.category)}</strong></div>
       <div class="inspector-row"><span>Valence electrons</span><strong>${e.valenceElectrons}</strong></div>
       ${callout}
-      ${sites?`<button class="btn secondary small full" id="startSelectedBond">Start bond from ${escapeHtml(atom.symbol)}</button>`:''}
-      <p class="subhead" style="margin-top:14px">Formal charge</p>
-      <div class="charge-controls"><button class="btn ghost icon-btn" id="chargeMinus">−</button><div class="charge-value">${displayCharge(atom.charge)}</div><button class="btn ghost icon-btn" id="chargePlus">+</button></div>
-      <button class="btn ghost small full" id="chargeReset">Reset charge</button>
+      ${sites?`<button class="btn secondary small full" id="startSelectedBond">${startLabel}</button>`:''}
+      <p class="subhead" style="margin-top:14px">${e.metal?'Ionic charge':'Formal / ionic charge'}</p>
+      <div class="charge-options" id="chargeOptions">${chargeButtons}</div>
+      <p class="helper-text">Only explicitly modeled charge states are selectable. Formal charge and oxidation state are not interchangeable.</p>
       <div class="divider"></div>
       <div class="inspector-row"><span>Covalent bond order</span><strong>${atomState?.covalentOrder ?? 0}</strong></div>
-      <div class="inspector-row"><span>Allowed valence</span><strong>${atomState?.allowed?.join(' / ') || '0'}</strong></div>
+      <div class="inspector-row"><span>Permitted state</span><strong>${escapeHtml(valenceText)}</strong></div>
       <div class="inspector-row"><span>Nonbonding electrons</span><strong>${atomState?.inferredNonbondingElectrons ?? '—'}</strong></div>
       <div class="inspector-row"><span>Lewis shell</span><strong>${shellText}</strong></div>
       <div class="inspector-row"><span>Status</span><strong>${escapeHtml(atomState?.state || 'unknown')}</strong></div>
-      <p class="helper-text">${escapeHtml(atomState?.detail || '')}${e.flexible?' Transition-metal Lewis dots are only a simplified teaching representation.':''}</p>
+      <p class="helper-text">${escapeHtml(atomState?.detail || '')}${e.flexible?' Advanced transition-metal electron counting is outside this generic Lewis builder.':''}</p>
       <div class="divider"></div>
-      <p class="subhead">Connected bonds</p>
+      <p class="subhead">Connected interactions</p>
       <div class="bond-list" id="selectedBondList">${neighborBonds.length?'':'<p class="inspector-empty">No bonds connected.</p>'}</div>
       <button class="btn danger small full" id="deleteSelectedAtom" style="margin-top:12px">Delete atom</button>`;
     if(sites)$('startSelectedBond').addEventListener('click',()=>beginBondFromAtom(atom.id));
-    $('chargeMinus').addEventListener('click',()=>changeSelectedCharge(-1));$('chargePlus').addEventListener('click',()=>changeSelectedCharge(1));$('chargeReset').addEventListener('click',()=>setSelectedCharge(0));$('deleteSelectedAtom').addEventListener('click',()=>removeAtom(atom.id));
-    const list=$('selectedBondList');neighborBonds.forEach(bond=>{const other=getAtom(bond.a===atom.id?bond.b:bond.a);const item=document.createElement('div');item.className='bond-item';item.innerHTML=`<span><strong>${escapeHtml(other?.symbol||'?')}</strong> · ${escapeHtml(E.BOND_TYPES[bond.type]?.label||bond.type)}</span><button title="Remove bond">×</button>`;item.querySelector('button').addEventListener('click',()=>removeBond(bond.a,bond.b));list.appendChild(item);});
+    inspector.querySelectorAll('[data-set-charge]').forEach(btn=>btn.addEventListener('click',()=>setSelectedCharge(Number(btn.dataset.setCharge))));
+    $('deleteSelectedAtom').addEventListener('click',()=>removeAtom(atom.id));
+    const list=$('selectedBondList');
+    neighborBonds.forEach(bond=>{
+      const other=getAtom(bond.a===atom.id?bond.b:bond.a),item=document.createElement('div');item.className='bond-item';
+      item.innerHTML=`<span><strong>${escapeHtml(other?.symbol||'?')}</strong> · ${escapeHtml(E.BOND_TYPES[bond.type]?.label||bond.type)}</span><button title="Remove interaction">×</button>`;
+      item.querySelector('button').addEventListener('click',()=>removeBond(bond.a,bond.b));list.appendChild(item);
+    });
   }
 
   function setSelectedCharge(value) {
-    const atom=getAtom(state.selectedAtomId);if(!atom)return;value=Math.max(-4,Math.min(4,Number(value)));if(value===Number(atom.charge||0))return;
-    saveHistory();atom.charge=value;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();
+    const atom=getAtom(state.selectedAtomId);if(!atom)return;
+    value=Number(value);if(value===Number(atom.charge||0))return;
+    const check=E.canSetAtomCharge(state.atoms,state.bonds,atom.id,value);
+    if(!check.ok){
+      setGuide('Charge rejected',check.reason,'error');render();showToast(check.reason,'error');return;
+    }
+    saveHistory();atom.charge=value;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();showToast(`${E.ELEMENTS[atom.symbol].name} charge set to ${displayCharge(value)}.`,'good');
   }
-  function changeSelectedCharge(delta){const atom=getAtom(state.selectedAtomId);if(atom)setSelectedCharge(Number(atom.charge||0)+delta);}
 
   function renderValidation(validation) {
     validationList.innerHTML='';
-    if(!state.atoms.length){validationList.innerHTML='<div class="validation-message good">Add atoms to start structural validation.</div>';return;}
+    if(!state.atoms.length){validationList.innerHTML='<div class="validation-message good">Add atoms to start strict structural validation.</div>';return;}
     if(validation.errors.length){validation.errors.forEach(m=>{const d=document.createElement('div');d.className='validation-message error';d.textContent=m;validationList.appendChild(d);});}
     if(validation.status==='open'){
-      const d=document.createElement('div');d.className='validation-message warning';d.textContent='The graph is not over-valent, but at least one atom has open bonding capacity or radical/coordination character.';validationList.appendChild(d);
+      const d=document.createElement('div');d.className='validation-message warning';d.textContent='Not certified as a complete closed-shell structure. It may be a radical, electron-deficient intermediate, incomplete ionic ratio, or unfinished molecule.';validationList.appendChild(d);
     }
     validation.warnings.forEach(m=>{const d=document.createElement('div');d.className='validation-message warning';d.textContent=m;validationList.appendChild(d);});
-    if(validation.status==='valid'&&!validation.warnings.length){const d=document.createElement('div');d.className='validation-message good';d.textContent='The graph satisfies the configured valence, charge, and connectivity checks.';validationList.appendChild(d);}
+    if(validation.status==='valid'&&!validation.warnings.length){const d=document.createElement('div');d.className='validation-message good';d.textContent='Certified by the implemented strict rules: charge, bond order, electron count, shell capacity, ionic polarity, and connectivity are consistent.';validationList.appendChild(d);}
   }
 
   function renderSummary(validation,identity) {
     const empty=!state.atoms.length,disconnected=!empty&&validation.components.length>1;
-    const baseFormula=identity?.molecule?.formula||validation.formula||'—';const displayedFormula=disconnected?validation.components.map(componentFormula).join(' + '):baseFormula;
-    if(empty){$('moleculeName').textContent='No structure yet';$('moleculeDetail').textContent='Formula, molecular identity, and validation will appear here.';$('structureStatus').className='status-pill open';$('structureStatus').textContent='Empty';}
-    else if(disconnected){$('moleculeName').innerHTML=`Unbonded mixture · <span class="formula">${formulaHtml(displayedFormula)}</span>`;$('moleculeDetail').textContent=`The canvas contains ${validation.components.length} disconnected species. They have not formed one molecule.`;$('structureStatus').className='status-pill mixture';$('structureStatus').textContent='Mixture';}
-    else{$('moleculeName').innerHTML=`${escapeHtml(identity.name)} · <span class="formula">${formulaHtml(baseFormula)}</span>`;const detail=validation.status==='invalid'?(validation.errors[0]||'Invalid structure'):validation.status==='open'?'No over-valence error, but the structure has open valence, radical, or flexible coordination character.':'Configured valence and charge rules are satisfied.';$('moleculeDetail').textContent=detail;$('structureStatus').className=`status-pill ${validation.status}`;$('structureStatus').textContent=validation.status;}
-    $('metricFormula').innerHTML=empty?'—':formulaHtml(displayedFormula);$('metricMass').textContent=empty?'—':`${validation.mass.toFixed(3)} g/mol`;$('metricCharge').textContent=empty?'0':displayCharge(validation.charge);$('metricComponents').textContent=String(validation.components.length);
-    const dbe=E.degreeOfUnsaturation(validation.counts);$('metricDbe').textContent=dbe==null?'N/A':String(dbe);emptyState.style.display=empty?'grid':'none';
+    const baseFormula=identity?.molecule?.formula||validation.formula||'—';
+    const displayedFormula=disconnected?validation.components.map(componentFormula).join(' + '):baseFormula;
+    if(empty){
+      $('moleculeName').textContent='No structure yet';
+      $('moleculeDetail').textContent='Formula, molecular identity, and strict validation will appear here.';
+      $('structureStatus').className='status-pill open';$('structureStatus').textContent='Empty';
+    }else if(validation.status==='invalid'){
+      $('moleculeName').innerHTML=`Rejected structure · <span class="formula">${formulaHtml(displayedFormula)}</span>`;
+      $('moleculeDetail').textContent=validation.errors[0]||'The structure violates a strict chemistry rule.';
+      $('structureStatus').className='status-pill invalid';$('structureStatus').textContent='Rejected';
+    }else if(disconnected){
+      $('moleculeName').innerHTML=`Unbonded mixture · <span class="formula">${formulaHtml(displayedFormula)}</span>`;
+      $('moleculeDetail').textContent=`The canvas contains ${validation.components.length} disconnected species.${validation.status==='open'?' At least one species is also incomplete or reactive.':''}`;
+      $('structureStatus').className=`status-pill ${validation.status==='open'?'open':'mixture'}`;$('structureStatus').textContent=validation.status==='open'?'Open mixture':'Mixture';
+    }else{
+      $('moleculeName').innerHTML=`${escapeHtml(identity.name)} · <span class="formula">${formulaHtml(baseFormula)}</span>`;
+      const detail=validation.status==='open'?'Chemically possible only as an incomplete, radical, electron-deficient, or charge-unbalanced species. It is not certified as a closed-shell molecule.':'Strict valence, charge, shell-capacity, and connectivity rules are satisfied.';
+      $('moleculeDetail').textContent=detail;
+      $('structureStatus').className=`status-pill ${validation.status}`;$('structureStatus').textContent=validation.status;
+    }
+    $('metricFormula').innerHTML=empty?'—':formulaHtml(displayedFormula);
+    $('metricMass').textContent=empty?'—':`${validation.mass.toFixed(3)} g/mol`;
+    $('metricCharge').textContent=empty?'0':displayCharge(validation.charge);
+    $('metricComponents').textContent=String(validation.components.length);
+    const dbe=E.degreeOfUnsaturation(validation.counts);$('metricDbe').textContent=dbe==null?'N/A':String(dbe);
+    emptyState.style.display=empty?'grid':'none';
+
+    const elementalSingle=state.atoms.length===1&&state.bonds.length===0;
+    const addBlocked=empty||validation.status==='invalid'||(validation.status==='open'&&!identity?.molecule&&!elementalSingle)||(disconnected&&!identity?.molecule);
+    $('addReactantBtn').disabled=addBlocked;
+    $('addReactantBtn').title=addBlocked?'Only a validated complete structure, known radical, or single elemental species can be added.':'';
+    $('saveStructureBtn').disabled=empty||validation.status==='invalid';
+    $('saveStructureBtn').title=validation.status==='invalid'?'Rejected structures cannot be saved as validated structures.':'';
+    $('exportMolBtn').disabled=empty||validation.status==='invalid';
+    $('exportMolBtn').title=validation.status==='invalid'?'Fix structural errors before export.':'';
   }
 
   function render() {
@@ -1806,7 +2142,9 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 
   function exportMol(){
     if(!state.atoms.length){showToast('Build a structure first.');return;}
-    const identity=currentIdentity(),validation=currentValidation();const title=identity.name||validation.formula;
+    const identity=currentIdentity(),validation=currentValidation();
+    if(validation.status==='invalid'){showToast('Rejected structures cannot be exported as valid molecular files.','error');return;}
+    const title=identity.name||validation.formula;
     const blob=new Blob([E.toMolfile(currentGraph(),title)],{type:'chemical/x-mdl-molfile'}),url=URL.createObjectURL(blob),a=document.createElement('a');
     a.href=url;a.download=`${(identity.key||validation.formula||'structure').replace(/[^A-Za-z0-9_-]/g,'_')}.mol`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     showToast('MOL file exported.','good');
