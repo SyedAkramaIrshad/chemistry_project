@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ChemLab Studio Advanced — a graph-based molecule builder, valence validator, equation balancer, and deterministic general-chemistry reaction engine.">
-  <title>ChemLab Studio Advanced</title>
+  <meta name="description" content="ChemLab Studio Advanced — an interactive Lewis-electron molecule builder, valence validator, equation balancer, and deterministic general-chemistry reaction engine.">
+  <title>ChemLab Studio Advanced — Lewis Bonding</title>
   <style>
 :root {
   --ink:#132238;
@@ -84,19 +84,35 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 .tool-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.tool-label{font-size:.73rem;color:var(--muted);font-weight:800;margin-right:2px}
 .btn{border:0;border-radius:12px;min-height:39px;padding:8px 13px;font-weight:850;color:var(--ink);background:#edf1f7;transition:.16s;display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .btn:hover:not(:disabled){transform:translateY(-1px)}.btn.primary{color:white;background:linear-gradient(145deg,var(--primary),#654ed7);box-shadow:0 8px 18px rgba(54,89,227,.20)}.btn.secondary{color:white;background:linear-gradient(145deg,var(--secondary),var(--secondary-dark))}.btn.ghost{background:white;border:1px solid var(--line)}.btn.danger{color:var(--danger);background:#fff0f3}.btn.warning{color:#8b4a00;background:#fff6e8}.btn.small{min-height:34px;padding:7px 9px;font-size:.73rem}.btn.active{color:white;background:var(--ink)}.btn.full{width:100%}
+.bond-guide{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#f5f8ff,#f3fbf8);min-height:60px}
+.guide-icon{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;color:white;background:var(--primary);font-size:.78rem;font-weight:950;box-shadow:0 7px 15px rgba(54,89,227,.2)}
+.guide-icon.closed{background:#6f7d91}.guide-icon.ready{background:var(--secondary)}.guide-icon.error{background:var(--danger)}
+.guide-copy{min-width:0}.guide-copy strong{display:block;font-size:.79rem;line-height:1.25}.guide-copy span{display:block;margin-top:2px;color:var(--muted);font-size:.69rem;line-height:1.42}
+.guide-legend{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.62rem;font-weight:800}.guide-legend span{display:flex;align-items:center;gap:5px;white-space:nowrap}.guide-legend i{display:inline-block;width:9px;height:9px;border-radius:50%}.legend-electron{background:var(--ink)}.legend-site{background:var(--secondary);box-shadow:0 0 0 3px rgba(15,159,124,.16)}.legend-closed{background:#eef2f6;border:2px solid #97a5b8}
 #workspace{position:relative;height:610px;overflow:hidden;isolation:isolate;background-color:#fbfcff;background-image:linear-gradient(rgba(54,89,227,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(54,89,227,.045) 1px,transparent 1px);background-size:28px 28px;touch-action:none}
 #workspace.dragover{box-shadow:inset 0 0 0 3px rgba(54,89,227,.35);background-color:#f5f7ff}
 #bondLayer{position:absolute;inset:0;width:100%;height:100%;z-index:1;overflow:visible}
 #atomLayer{position:absolute;inset:0;z-index:2}
 .empty-state{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none;z-index:0;color:var(--muted);padding:32px}
-.empty-inner{max-width:420px}.empty-icon{width:86px;height:86px;margin:0 auto 16px;border-radius:26px;background:white;display:grid;place-items:center;box-shadow:0 12px 35px rgba(18,34,56,.08);font-size:2rem;font-weight:900;color:var(--primary)}.empty-state h3{color:var(--ink);margin:0 0 8px;font-size:1.08rem}.empty-state p{margin:0;line-height:1.6;font-size:.87rem}
-.atom-node{position:absolute;width:62px;height:62px;border-radius:50%;transform:translate(-50%,-50%);display:grid;place-items:center;font-weight:900;font-size:1.22rem;user-select:none;border:0;z-index:3;box-shadow:0 10px 22px rgba(18,34,56,.20),inset 0 0 0 4px rgba(255,255,255,.27);transition:box-shadow .15s,filter .15s}
-.atom-node:hover{filter:brightness(1.04)}.atom-node.selected{box-shadow:0 0 0 5px rgba(54,89,227,.23),0 12px 25px rgba(18,34,56,.22),inset 0 0 0 4px rgba(255,255,255,.32)}.atom-node.invalid{box-shadow:0 0 0 5px rgba(201,62,87,.25),0 12px 25px rgba(18,34,56,.22),inset 0 0 0 4px rgba(255,255,255,.32)}.atom-node.open{box-shadow:0 0 0 4px rgba(217,119,6,.18),0 10px 22px rgba(18,34,56,.20),inset 0 0 0 4px rgba(255,255,255,.27)}
+.empty-inner{max-width:440px}.empty-icon{width:86px;height:86px;margin:0 auto 16px;border-radius:26px;background:white;display:grid;place-items:center;box-shadow:0 12px 35px rgba(18,34,56,.08);font-size:2rem;font-weight:900;color:var(--primary)}.empty-state h3{color:var(--ink);margin:0 0 8px;font-size:1.08rem}.empty-state p{margin:0;line-height:1.6;font-size:.87rem}
+.atom-cluster{position:absolute;width:118px;height:118px;transform:translate(-50%,-50%);z-index:3;pointer-events:none;transition:filter .15s}
+.atom-cluster.compatible{filter:drop-shadow(0 0 8px rgba(15,159,124,.34))}.atom-cluster.incompatible{filter:saturate(.75)}.atom-cluster.pending{z-index:6}
+.valence-ring{position:absolute;left:50%;top:50%;width:91px;height:91px;transform:translate(-50%,-50%);border-radius:50%;border:1px dashed rgba(72,91,117,.28);pointer-events:none;transition:.15s}
+.atom-cluster.selected .valence-ring,.atom-cluster.pending .valence-ring{border-color:rgba(54,89,227,.58);border-width:2px}.atom-cluster.closed-shell .valence-ring{border-style:solid;border-color:rgba(111,125,145,.42)}.atom-cluster.compatible .valence-ring{border-color:rgba(15,159,124,.75)}
+.atom-node{position:absolute;left:50%;top:50%;width:62px;height:62px;border-radius:50%;transform:translate(-50%,-50%);display:grid;place-items:center;font-weight:900;font-size:1.22rem;user-select:none;border:0;z-index:3;pointer-events:auto;box-shadow:0 10px 22px rgba(18,34,56,.20),inset 0 0 0 4px rgba(255,255,255,.27);transition:box-shadow .15s,filter .15s,transform .15s}
+.atom-node:hover{filter:brightness(1.04);transform:translate(-50%,-50%) scale(1.035)}.atom-cluster.selected .atom-node,.atom-cluster.pending .atom-node{box-shadow:0 0 0 5px rgba(54,89,227,.23),0 12px 25px rgba(18,34,56,.22),inset 0 0 0 4px rgba(255,255,255,.32)}.atom-node.invalid{box-shadow:0 0 0 5px rgba(201,62,87,.25),0 12px 25px rgba(18,34,56,.22),inset 0 0 0 4px rgba(255,255,255,.32)}.atom-node.open{box-shadow:0 0 0 4px rgba(217,119,6,.18),0 10px 22px rgba(18,34,56,.20),inset 0 0 0 4px rgba(255,255,255,.27)}
 .atom-charge{position:absolute;right:-5px;top:-9px;min-width:23px;text-align:center;font-size:.63rem;color:var(--ink);background:white;padding:3px 5px;border-radius:9px;box-shadow:0 3px 9px rgba(18,34,56,.16)}
-.bond-hit{stroke:transparent;stroke-width:19;pointer-events:stroke;cursor:pointer}.bond-hit:hover+.bond-visible{filter:drop-shadow(0 0 3px rgba(54,89,227,.8))}.bond-visible{pointer-events:none}
+.electron-dot{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--ink);transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 1px 3px rgba(18,34,56,.25);z-index:5}.electron-dot.radical{background:var(--warning)}
+.bond-handle{position:absolute;width:24px;height:24px;border-radius:50%;transform:translate(-50%,-50%);border:2px solid white;background:var(--secondary);box-shadow:0 0 0 3px rgba(15,159,124,.17),0 5px 13px rgba(8,116,92,.25);pointer-events:auto;z-index:8;color:white;padding:0;display:grid;place-items:center;opacity:.70;transition:transform .14s,opacity .14s,box-shadow .14s}
+.bond-handle:before{content:"•";font-size:1rem;line-height:1}.bond-handle:hover,.atom-cluster.selected .bond-handle,.atom-cluster.pending .bond-handle,.atom-cluster.compatible .bond-handle{opacity:1;transform:translate(-50%,-50%) scale(1.13);box-shadow:0 0 0 5px rgba(15,159,124,.18),0 7px 16px rgba(8,116,92,.3)}
+.bond-handle.ionic{background:#7652a7;box-shadow:0 0 0 3px rgba(118,82,167,.16),0 5px 13px rgba(82,52,124,.25)}.bond-handle.ionic:before{content:"↔";font-size:.68rem}
+.atom-cluster.incompatible .bond-handle{display:none}.atom-cluster.closed-shell .bond-handle{display:none}
+.closed-shell-badge{position:absolute;left:50%;top:100%;transform:translate(-50%,-10px);padding:4px 7px;border-radius:999px;background:white;border:1px solid #cfd8e4;color:#5d6b7e;font-size:.56rem;font-weight:900;white-space:nowrap;box-shadow:0 5px 12px rgba(18,34,56,.1);pointer-events:none;z-index:9}
+.bond-hit{stroke:transparent;stroke-width:19;pointer-events:stroke;cursor:pointer}.bond-hit:hover+.bond-visible{filter:drop-shadow(0 0 3px rgba(54,89,227,.8))}.bond-visible{pointer-events:none}.bond-preview{stroke:var(--secondary);stroke-width:5;stroke-linecap:round;stroke-dasharray:8 7;pointer-events:none;filter:drop-shadow(0 0 4px rgba(15,159,124,.35));animation:dash 1.1s linear infinite}.bond-electron{fill:var(--ink);stroke:white;stroke-width:1.1;pointer-events:none}.bond-preview-label{font-size:11px;font-weight:900;fill:var(--secondary-dark);paint-order:stroke;stroke:white;stroke-width:4px;stroke-linejoin:round;pointer-events:none}@keyframes dash{to{stroke-dashoffset:-30}}
+.inspector-callout{border-radius:12px;padding:10px 11px;margin:11px 0;font-size:.72rem;line-height:1.5}.inspector-callout.ready{background:#edf9f5;border:1px solid #cdece1;color:#086447}.inspector-callout.closed{background:#f2f5f8;border:1px solid #d7e0e9;color:#506079}.inspector-callout.warning{background:#fff7e9;border:1px solid #f2dbb7;color:#81500c}
 .builder-summary{border-top:1px solid var(--line);padding:14px 15px;display:grid;gap:12px}
 .summary-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.summary-title{min-width:0}.summary-title strong{font-size:.92rem}.summary-title p{margin:3px 0 0;color:var(--muted);font-size:.76rem;line-height:1.45}
-.status-pill{border-radius:999px;padding:6px 9px;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.status-pill.valid{background:#e9f8f2;color:var(--good)}.status-pill.open{background:#fff5e5;color:#a45b00}.status-pill.invalid{background:#fff0f3;color:var(--danger)}
+.status-pill{border-radius:999px;padding:6px 9px;font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.status-pill.valid{background:#e9f8f2;color:var(--good)}.status-pill.open{background:#fff5e5;color:#a45b00}.status-pill.invalid{background:#fff0f3;color:var(--danger)}.status-pill.mixture{background:#eef2ff;color:var(--primary-dark)}
 .metric-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.metric{border:1px solid var(--line);border-radius:12px;background:#fbfcff;padding:8px 9px;min-width:0}.metric span{display:block;color:var(--muted);font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;font-weight:800}.metric strong{display:block;margin-top:3px;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .summary-actions{display:flex;gap:7px;flex-wrap:wrap}
 .right-stack{display:grid;gap:16px}.inspector-empty{color:var(--muted);font-size:.8rem;line-height:1.55;margin:0}.inspector-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.77rem}.inspector-row:last-child{border-bottom:0}.inspector-row span{color:var(--muted)}
@@ -117,8 +133,22 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 .test-list{display:grid;gap:8px}.test-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:11px;padding:9px 10px;font-size:.76rem}.test-item.ok strong{color:var(--good)}.test-item.fail strong{color:var(--danger)}
 .pulse{animation:pulse .58s ease}@keyframes pulse{0%{filter:saturate(1)}45%{filter:saturate(1.35) brightness(1.05)}100%{filter:saturate(1)}}
 @media(max-width:1220px){.lab-grid{grid-template-columns:245px minmax(0,1fr)}.right-stack{grid-column:1/-1;grid-template-columns:1fr 1fr}.metric-grid{grid-template-columns:repeat(5,1fr)}}
-@media(max-width:900px){.hero{grid-template-columns:1fr}.hero-side{grid-template-columns:repeat(3,1fr);align-content:stretch}.rule-card{grid-template-columns:1fr}.rule-icon{display:none}.lab-grid{grid-template-columns:1fr}.right-stack{grid-column:auto;grid-template-columns:1fr}.atom-grid{grid-template-columns:repeat(8,1fr);max-height:none}.preset-list{grid-template-columns:repeat(2,1fr);max-height:310px}.reaction-grid,.balancer-grid{grid-template-columns:1fr}.coverage-grid{grid-template-columns:repeat(2,1fr)}#workspace{height:535px}}
-@media(max-width:650px){.app-shell{width:min(100% - 16px,1510px);padding-top:8px}.topbar{top:4px;padding:9px}.brand small,.engine-pill,.top-actions .btn:not(.primary){display:none}h1{font-size:2.75rem}.hero-copy{padding:25px 19px}.hero-side{display:none}.atom-grid{grid-template-columns:repeat(4,1fr)}.preset-list{grid-template-columns:1fr}.builder-toolbar{align-items:flex-start}#workspace{height:480px}.atom-node{width:56px;height:56px}.metric-grid{grid-template-columns:repeat(2,1fr)}.metric:last-child{grid-column:1/-1}.summary-top{align-items:flex-start}.formula-add{grid-template-columns:1fr}.formula-add .btn{width:100%}.coverage-grid{grid-template-columns:1fr}.toast{right:9px;left:9px;bottom:10px;max-width:none}.top-actions{gap:5px}.btn.small{padding:7px 8px}.bond-label-text{display:none}}
+@media(max-width:900px){.bond-guide{grid-template-columns:36px 1fr}.guide-legend{grid-column:1/-1;justify-content:flex-start;padding-left:46px}
+.hero{grid-template-columns:1fr}.hero-side{grid-template-columns:repeat(3,1fr);align-content:stretch}.rule-card{grid-template-columns:1fr}.rule-icon{display:none}.lab-grid{grid-template-columns:1fr}.right-stack{grid-column:auto;grid-template-columns:1fr}.atom-grid{grid-template-columns:repeat(8,1fr);max-height:none}.preset-list{grid-template-columns:repeat(2,1fr);max-height:310px}.reaction-grid,.balancer-grid{grid-template-columns:1fr}.coverage-grid{grid-template-columns:repeat(2,1fr)}#workspace{height:535px}}
+@media(max-width:650px){.bond-guide{grid-template-columns:30px 1fr;padding:9px 10px}.guide-icon{width:28px;height:28px}.guide-legend{display:none}.guide-copy strong{font-size:.74rem}.guide-copy span{font-size:.65rem}.atom-cluster{width:108px;height:108px}.valence-ring{width:84px;height:84px}.bond-handle{width:22px;height:22px}
+.app-shell{width:min(100% - 16px,1510px);padding-top:8px}.topbar{top:4px;padding:9px}.brand small,.engine-pill,.top-actions .btn:not(.primary){display:none}h1{font-size:2.75rem}.hero-copy{padding:25px 19px}.hero-side{display:none}.atom-grid{grid-template-columns:repeat(4,1fr)}.preset-list{grid-template-columns:1fr}.builder-toolbar{align-items:flex-start}#workspace{height:480px}.atom-node{width:56px;height:56px}.metric-grid{grid-template-columns:repeat(2,1fr)}.metric:last-child{grid-column:1/-1}.summary-top{align-items:flex-start}.formula-add{grid-template-columns:1fr}.formula-add .btn{width:100%}.coverage-grid{grid-template-columns:1fr}.toast{right:9px;left:9px;bottom:10px;max-width:none}.top-actions{gap:5px}.btn.small{padding:7px 8px}.bond-label-text{display:none}}
+
+/* Intuitive Lewis-bond interaction states */
+.toggle-btn{border:1px solid var(--line-strong)}
+.toggle-btn.active{color:var(--good);background:#e9f8f2;border-color:#b9e5d7}
+.atom-cluster{transition:filter .15s,transform .15s}
+.atom-cluster.hover-target{filter:drop-shadow(0 0 13px rgba(15,159,124,.68));transform:translate(-50%,-50%) scale(1.055)}
+.atom-cluster.hover-target .valence-ring{border-color:var(--secondary);border-width:3px;background:rgba(15,159,124,.055)}
+.atom-cluster.incompatible{opacity:.58}
+.atom-cluster.incompatible .valence-ring{border-color:rgba(201,62,87,.42);border-style:solid}
+.atom-cluster.compatible .atom-node{box-shadow:0 0 0 5px rgba(15,159,124,.21),0 12px 26px rgba(8,116,92,.22),inset 0 0 0 4px rgba(255,255,255,.32)}
+.electron-count-badge{position:absolute;left:50%;top:100%;transform:translate(-50%,-10px);padding:4px 7px;border-radius:999px;background:white;border:1px solid #d6dce6;color:#5d6b7e;font-size:.54rem;font-weight:900;white-space:nowrap;box-shadow:0 5px 12px rgba(18,34,56,.1);pointer-events:none;z-index:9}
+.bond-handle:focus-visible,.atom-node:focus-visible{outline:3px solid rgba(54,89,227,.44);outline-offset:4px}
 
 </style>
 </head>
@@ -157,7 +187,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 
     <main class="lab-grid" id="laboratory">
       <aside class="panel">
-        <div class="panel-header"><h2>Atom and molecule library</h2><p>Click or drag an element. Search presets by name or formula.</p></div>
+        <div class="panel-header"><h2>Atom and molecule library</h2><p>Click or drag an element. Lewis electrons and valid bonding sites appear on the canvas.</p></div>
         <div class="panel-body">
           <input class="search-input" id="elementSearch" type="search" placeholder="Search elements…" autocomplete="off">
           <div class="atom-grid" id="atomPalette"></div>
@@ -171,18 +201,30 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
       <section class="panel builder-panel">
         <div class="builder-toolbar">
           <div class="tool-group" aria-label="Bond tools">
-            <span class="tool-label">Bond:</span>
-            <button class="btn small active" data-bond-type="single"><span class="bond-label-text">Single</span> —</button>
+            <span class="tool-label">Bond mode:</span>
+            <button class="btn small active" data-bond-type="auto"><span class="bond-label-text">Auto</span> ✦</button>
+            <button class="btn small" data-bond-type="single"><span class="bond-label-text">Single</span> —</button>
             <button class="btn small" data-bond-type="double"><span class="bond-label-text">Double</span> ═</button>
             <button class="btn small" data-bond-type="triple"><span class="bond-label-text">Triple</span> ≡</button>
             <button class="btn small" data-bond-type="aromatic"><span class="bond-label-text">Aromatic</span> ◌</button>
             <button class="btn small" data-bond-type="ionic"><span class="bond-label-text">Ionic</span> ⋯</button>
           </div>
           <div class="tool-group">
+            <button class="btn small active toggle-btn" id="lewisToggle" aria-pressed="true" title="Show or hide simplified Lewis valence electrons"><span aria-hidden="true">••</span> <span class="bond-label-text">Electrons</span></button>
             <button class="btn secondary small" id="hydrogenBtn">Complete with H</button>
             <button class="btn ghost small" id="undoBtn">Undo</button>
             <button class="btn ghost small" id="centerBtn">Center</button>
             <button class="btn danger small" id="clearBtn">Clear</button>
+          </div>
+        </div>
+
+        <div class="bond-guide" id="bondGuide" aria-live="polite">
+          <div class="guide-icon" id="guideIcon">1</div>
+          <div class="guide-copy"><strong id="guideTitle">Add or select an atom</strong><span id="guideDetail">Glowing green dots are available bonding sites. Drag one onto a compatible atom.</span></div>
+          <div class="guide-legend" aria-hidden="true">
+            <span><i class="legend-electron"></i> nonbonding electron</span>
+            <span><i class="legend-site"></i> bondable electron</span>
+            <span><i class="legend-closed"></i> full shell</span>
           </div>
         </div>
 
@@ -193,7 +235,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
             <div class="empty-inner">
               <div class="empty-icon">⚛</div>
               <h3>Add an atom to begin</h3>
-              <p>Select two atoms to connect them. Use the charge controls for ions and formal charges. Invalid valence combinations are rejected.</p>
+              <p>Valence electrons appear around each atom. Drag a glowing electron dot to another atom; compatible targets turn green and impossible bonds are blocked.</p>
             </div>
           </div>
         </div>
@@ -220,7 +262,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 
       <aside class="right-stack">
         <section class="panel">
-          <div class="panel-header"><h2>Atom inspector</h2><p>Select an atom to inspect bonds, formal charge, and electron state.</p></div>
+          <div class="panel-header"><h2>Atom inspector</h2><p>Select an atom to inspect bonds, formal charge, electrons, and remaining bonding capacity.</p></div>
           <div class="panel-body" id="inspector"><p class="inspector-empty">Nothing selected. Click an atom in the workspace.</p></div>
         </section>
 
@@ -291,7 +333,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
       <header><h2 id="howTitle">How the chemistry engine works</h2><button class="btn ghost icon-btn" data-close-modal="howModal" aria-label="Close">×</button></header>
       <main>
         <h3>1. Molecular graph</h3><p>Every atom is a node. Covalent, aromatic, and ionic interactions are edges. Known molecules are identified by graph isomorphism, so an incorrect H–H–O structure is not recognized as water even though it contains H₂O.</p>
-        <h3>2. Valence and charge</h3><p>Before a bond is accepted, the engine tests the selected bond order against supported valence states at the atom’s formal charge. Ionic interactions require opposite charges; common charges can be assigned automatically for a typical metal–nonmetal pair.</p>
+        <h3>2. Lewis electrons and bonding</h3><p>The canvas shows a simplified Lewis view. Lone-pair electrons are visible but inert. Glowing unpaired electrons are bond launchers: choose a bond type, then drag one onto a compatible atom or click it and then click a green target. Before accepting the bond, the engine checks the required bond order against both atoms’ supported valence states and formal charges.</p><p>Neutral helium and neon have filled shells, so they intentionally show no glowing bonding electron and cannot be joined by an ordinary classroom covalent or ionic bond. Ionic interactions require opposite charges; common charges can be assigned automatically for a typical metal–nonmetal pair.</p>
         <h3>3. Reactions</h3><p>The predictor first checks exact textbook reactions, then deterministic families such as complete combustion, neutralization, activity-series displacement, and precipitation. It balances generated products using conservation of elements and charge.</p>
         <h3>4. Scientific boundary</h3><p>A universal reaction predictor cannot be derived from reactant identity alone. Real outcomes can depend on solvent, temperature, pressure, catalyst, concentration, phase, light, electrochemical potential, and reaction history. Unsupported cases therefore return “not uniquely predictable” instead of a fabricated equation.</p>
         <h3>Safety</h3><p>This application teaches representations and reaction logic. It does not provide experimental quantities, apparatus instructions, or operational synthesis procedures.</p>
@@ -1147,7 +1189,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   };
 });
 
-  </script>
+</script>
   <script>
 (function (root, factory) {
   const api = factory();
@@ -1255,7 +1297,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   return {MOLECULES,VISIBLE_PRESETS,QUICK_SPECIES};
 });
 
-  </script>
+</script>
   <script>
 (function () {
   'use strict';
@@ -1265,7 +1307,8 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
 
   const state = {
     atoms: [], bonds: [], nextId: 1, selectedAtomId: null, pendingBondAtomId: null,
-    bondType: 'single', history: [], reactants: []
+    bondType: 'auto', showLewisElectrons: true, bondDrag: null, guideOverride: null,
+    history: [], reactants: []
   };
 
   const $ = id => document.getElementById(id);
@@ -1318,192 +1361,323 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   function currentValidation() { return E.validateGraph(state.atoms,state.bonds); }
   function currentIdentity() { return E.identifyGraph(currentGraph(),L.MOLECULES); }
 
+
+  function bondLabel(type) {
+    return type === 'auto' ? 'Auto bond' : (E.BOND_TYPES[type]?.label || type);
+  }
+
+  function remainingBondCapacity(atom, atomState) {
+    if (!atom || !atomState || atomState.state === 'invalid') return 0;
+    const current = Number(atomState.covalentOrder || 0);
+    const allowed = (atomState.allowed || []).slice().sort((a,b)=>a-b);
+    if (allowed.some(v => Math.abs(v-current) < 1e-9)) return 0;
+    const next = allowed.find(v => v > current + 1e-9);
+    if (next == null) return 0;
+    return Math.max(0, Math.min(4, Math.ceil(next-current-1e-9)));
+  }
+
+  function availableInteractionSites(atom, atomState) {
+    if(!atom||!atomState)return 0;
+    const el=E.ELEMENTS[atom.symbol];
+    if(el?.category==='noble gas')return 0;
+    if(Number(atom.charge||0)!==0&&(state.bondType==='ionic'||state.bondType==='auto'))return 1;
+    return remainingBondCapacity(atom,atomState);
+  }
+
+  function atomStateDeficit(atomState) {
+    if (!atomState || atomState.state === 'invalid' || atomState.state === 'satisfied') return 0;
+    const current = Number(atomState.covalentOrder || 0);
+    const next = (atomState.allowed || []).slice().sort((a,b)=>a-b).find(v => v > current + 1e-9);
+    return next == null ? 8 : Math.max(0,next-current);
+  }
+
+  function explainBondFailure(aId,bId,fallback='That bond is not supported.') {
+    const a=getAtom(aId),b=getAtom(bId);
+    if(!a||!b)return fallback;
+    const ea=E.ELEMENTS[a.symbol],eb=E.ELEMENTS[b.symbol];
+    if(ea?.category==='noble gas'&&eb?.category==='noble gas'){
+      if(new Set([a.symbol,b.symbol]).has('He')&&new Set([a.symbol,b.symbol]).has('Ne')){
+        return 'Helium has a full 2-electron shell and neon has a full 8-electron shell. A stable He–Ne molecule is not expected under ordinary conditions, so no normal bond is available.';
+      }
+      return `${ea.name} and ${eb.name} have filled valence shells. This introductory model does not permit a normal stable bond between them.`;
+    }
+    if(ea?.category==='noble gas'||eb?.category==='noble gas'){
+      const noble=ea.category==='noble gas'?ea:eb;
+      return `${noble.name} has a filled valence shell and no ordinary bonding site in this model.`;
+    }
+    return fallback;
+  }
+
+  function resolveBondRequest(aId,bId,requestedType=state.bondType) {
+    if(requestedType!=='auto'){
+      const check=E.canApplyBond(state.atoms,state.bonds,aId,bId,requestedType);
+      return {...check,type:requestedType,automatic:false};
+    }
+    const a=getAtom(aId),b=getAtom(bId);
+    if(!a||!b)return {ok:false,type:null,automatic:true,reason:'Atom not found.'};
+    const ea=E.ELEMENTS[a.symbol],eb=E.ELEMENTS[b.symbol];
+    if(ea?.category==='noble gas'||eb?.category==='noble gas'){
+      return {ok:false,type:null,automatic:true,reason:explainBondFailure(aId,bId)};
+    }
+    if((ea?.metal&&!eb?.metal)||(eb?.metal&&!ea?.metal)){
+      const ionic=E.canApplyBond(state.atoms,state.bonds,aId,bId,'ionic');
+      if(ionic.ok)return {...ionic,type:'ionic',automatic:true};
+    }
+    const trialTypes=(ea?.metal&&eb?.metal)?['single']:['single','double','triple'];
+    const candidates=[];
+    let firstReason='No supported bond order fits both atoms.';
+    for(const type of trialTypes){
+      const check=E.canApplyBond(state.atoms,state.bonds,aId,bId,type);
+      if(!check.ok){if(firstReason==='No supported bond order fits both atoms.')firstReason=check.reason;continue;}
+      const pair=check.validation.atomStates.filter(x=>x.atomId===aId||x.atomId===bId);
+      const satisfied=pair.filter(x=>x.state==='satisfied').length;
+      const deficit=pair.reduce((sum,x)=>sum+atomStateDeficit(x),0);
+      const order=E.BOND_TYPES[type].order;
+      candidates.push({...check,type,automatic:true,score:satisfied*100-deficit*18-order*.01});
+    }
+    if(!candidates.length)return {ok:false,type:null,automatic:true,reason:explainBondFailure(aId,bId,firstReason)};
+    candidates.sort((x,y)=>y.score-x.score);
+    return candidates[0];
+  }
+
+  function setGuide(title,text,kind='info') { state.guideOverride={title,text,kind}; }
+  function clearGuide() { state.guideOverride=null; }
+
+  function componentFormula(componentIds) {
+    const ids=new Set(componentIds);
+    return E.graphFormula(state.atoms.filter(a=>ids.has(a.id)));
+  }
+
+  function renderGuide(validation) {
+    const guide=$('bondGuide');if(!guide)return;
+    let data=state.guideOverride;
+    if(!data){
+      const sourceId=state.bondDrag?.sourceId||state.pendingBondAtomId;
+      if(!state.atoms.length){
+        data={kind:'info',title:'Add or select an atom',text:'Glowing dots are available bonding electrons. Drag one onto a compatible atom.'};
+      }else if(sourceId){
+        const atom=getAtom(sourceId);
+        data={kind:'ready',title:`Connecting from ${atom?.symbol||'atom'}`,text:`Release on a green atom. ${bondLabel(state.bondType)} mode is active.`};
+      }else if(state.selectedAtomId){
+        const atom=getAtom(state.selectedAtomId),el=atom&&E.ELEMENTS[atom.symbol];
+        const atomState=validation.atomStates.find(x=>x.atomId===state.selectedAtomId);
+        const capacity=availableInteractionSites(atom,atomState);
+        if(el?.category==='noble gas')data={kind:'closed',title:`${el.name}: full valence shell`,text:`${atom.symbol==='He'?'2':'8'} valence electrons are already paired. No ordinary bond handle is shown.`};
+        else if(capacity>0)data={kind:'ready',title:`${el.name}: ${capacity} bondable electron${capacity===1?'':'s'}`,text:'Drag any glowing green dot to another atom. Auto mode chooses the most compatible bond order.'};
+        else data={kind:'closed',title:`${el?.name||'Atom'}: current valence complete`,text:'No normal bond handle is available unless the charge or existing bonding state changes.'};
+      }else{
+        const onlyNeutralNoble=state.atoms.every(a=>E.ELEMENTS[a.symbol].category==='noble gas'&&!Number(a.charge||0));
+        data=onlyNeutralNoble
+          ? {kind:'closed',title:'These atoms have filled shells',text:'Neutral helium and neon cannot form a normal stable bond. Try H + H, O + H, or C + H to see bondable electrons.'}
+          : {kind:'info',title:'Select an atom or drag a glowing dot',text:'Dark paired dots are nonbonding electrons. Green dots can start a bond.'};
+      }
+    }
+    const iconClass=data.kind==='ready'?'ready':data.kind==='error'?'error':data.kind==='closed'?'closed':'';
+    const icon=data.kind==='error'?'×':data.kind==='closed'?'✓':data.kind==='ready'?'2':'1';
+    guide.innerHTML=`<div class="guide-icon ${iconClass}">${icon}</div><div class="guide-copy"><strong>${escapeHtml(data.title)}</strong><span>${escapeHtml(data.text)}</span></div><div class="guide-legend" aria-hidden="true"><span><i class="legend-electron"></i> nonbonding electron</span><span><i class="legend-site"></i> bondable electron</span><span><i class="legend-closed"></i> full shell</span></div>`;
+  }
+
   function addAtom(symbol,x,y,record=true) {
     if (!E.ELEMENTS[symbol]) return;
     if (record) saveHistory();
     const rect = workspace.getBoundingClientRect();
-    const px = Number.isFinite(x) ? x : rect.width/2 + (Math.random()-.5)*90;
-    const py = Number.isFinite(y) ? y : rect.height/2 + (Math.random()-.5)*90;
-    const atom = {id:state.nextId++,symbol,charge:0,x:Math.max(35,Math.min(rect.width-35,px)),y:Math.max(35,Math.min(rect.height-35,py))};
-    state.atoms.push(atom);
-    state.selectedAtomId = atom.id;
-    state.pendingBondAtomId = null;
-    render();
+    const px = Number.isFinite(x) ? x : rect.width/2 + (Math.random()-.5)*100;
+    const py = Number.isFinite(y) ? y : rect.height/2 + (Math.random()-.5)*100;
+    const atom = {id:state.nextId++,symbol,charge:0,x:Math.max(58,Math.min(rect.width-58,px)),y:Math.max(58,Math.min(rect.height-58,py))};
+    state.atoms.push(atom);state.selectedAtomId=atom.id;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();
   }
 
   function removeAtom(id) {
     if (!getAtom(id)) return;
-    saveHistory();
-    state.atoms = state.atoms.filter(a=>a.id!==id);
-    state.bonds = state.bonds.filter(b=>b.a!==id&&b.b!==id);
-    if (state.selectedAtomId===id) state.selectedAtomId=null;
-    if (state.pendingBondAtomId===id) state.pendingBondAtomId=null;
-    render();
+    saveHistory();state.atoms=state.atoms.filter(a=>a.id!==id);state.bonds=state.bonds.filter(b=>b.a!==id&&b.b!==id);
+    if(state.selectedAtomId===id)state.selectedAtomId=null;if(state.pendingBondAtomId===id)state.pendingBondAtomId=null;
+    state.bondDrag=null;clearGuide();render();
   }
 
   function removeBond(a,b) {
     if (!getBond(a,b)) return;
-    saveHistory();
-    state.bonds = state.bonds.filter(x=>!((x.a===a&&x.b===b)||(x.a===b&&x.b===a)));
-    render();
-    showToast('Bond removed.');
+    saveHistory();state.bonds=state.bonds.filter(x=>!((x.a===a&&x.b===b)||(x.a===b&&x.b===a)));
+    state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();showToast('Bond removed.');
   }
 
   function connectAtoms(aId,bId) {
-    const check = E.canApplyBond(state.atoms,state.bonds,aId,bId,state.bondType);
-    if (!check.ok) {
-      state.pendingBondAtomId = null;
-      state.selectedAtomId = bId;
-      render();
-      showToast(check.reason,'error');
-      return;
+    const resolution=resolveBondRequest(aId,bId,state.bondType);
+    if(!resolution.ok){
+      const message=explainBondFailure(aId,bId,resolution.reason);
+      state.pendingBondAtomId=null;state.bondDrag=null;state.selectedAtomId=aId;
+      setGuide('Bond not allowed',message,'error');render();showToast(message,'error');return;
     }
-    saveHistory();
-    if (check.chargeUpdates) {
-      state.atoms.forEach(a => { if (check.chargeUpdates[a.id] != null) a.charge = check.chargeUpdates[a.id]; });
-    }
-    const existing = getBond(aId,bId);
-    if (existing) {
-      existing.type = state.bondType;
-      existing.order = E.BOND_TYPES[state.bondType].order;
-    } else {
-      state.bonds.push({a:aId,b:bId,type:state.bondType,order:E.BOND_TYPES[state.bondType].order});
-    }
-    state.pendingBondAtomId = null;
-    state.selectedAtomId = bId;
-    render();
-    showToast(`${E.BOND_TYPES[state.bondType].label} applied.`,'good');
+    const actualType=resolution.type;saveHistory();
+    if(resolution.chargeUpdates)state.atoms.forEach(a=>{if(resolution.chargeUpdates[a.id]!=null)a.charge=resolution.chargeUpdates[a.id];});
+    const existing=getBond(aId,bId);
+    if(existing){existing.type=actualType;existing.order=E.BOND_TYPES[actualType].order;}
+    else state.bonds.push({a:aId,b:bId,type:actualType,order:E.BOND_TYPES[actualType].order});
+    state.pendingBondAtomId=null;state.bondDrag=null;state.selectedAtomId=bId;
+    const autoText=resolution.automatic?`Auto mode selected ${E.BOND_TYPES[actualType].label.toLowerCase()}.`:`${E.BOND_TYPES[actualType].label} applied.`;
+    setGuide('Bond created',autoText,'ready');render();showToast(autoText,'good');
   }
 
   function selectAtom(id) {
-    state.selectedAtomId = id;
-    if (state.pendingBondAtomId && state.pendingBondAtomId !== id) connectAtoms(state.pendingBondAtomId,id);
-    else { state.pendingBondAtomId = id; render(); }
+    if(state.pendingBondAtomId&&state.pendingBondAtomId!==id){connectAtoms(state.pendingBondAtomId,id);return;}
+    state.selectedAtomId=id;if(state.pendingBondAtomId===id)state.pendingBondAtomId=null;clearGuide();render();
+  }
+
+  function beginBondFromAtom(id,ev=null) {
+    const atom=getAtom(id);if(!atom)return false;
+    const validation=currentValidation(),atomState=validation.atomStates.find(x=>x.atomId===id);
+    const sites=availableInteractionSites(atom,atomState);state.selectedAtomId=id;
+    if(!sites){
+      const el=E.ELEMENTS[atom.symbol];
+      const message=el.category==='noble gas'?`${el.name} has a filled valence shell, so it has no ordinary bonding electron to drag.`:`${el.name}'s current valence is complete; no normal bonding site is available.`;
+      state.pendingBondAtomId=null;state.bondDrag=null;setGuide('No bonding site',message,'error');render();showToast(message,'error');return false;
+    }
+    clearGuide();state.pendingBondAtomId=id;
+    if(ev){ev.preventDefault();ev.stopPropagation();const rect=workspace.getBoundingClientRect();state.bondDrag={sourceId:id,x:ev.clientX-rect.left,y:ev.clientY-rect.top,startX:ev.clientX,startY:ev.clientY,moved:false};}
+    render();if(!ev)showToast(`Connecting from ${atom.symbol}. Click a green target.`);return true;
+  }
+
+  function clearBondHover() {
+    atomLayer.querySelectorAll('.atom-cluster.hover-target').forEach(node=>node.classList.remove('hover-target'));
+  }
+
+  function onBondPointerMove(ev) {
+    if(!state.bondDrag)return;ev.preventDefault();
+    const rect=workspace.getBoundingClientRect(),drag=state.bondDrag;
+    drag.x=Math.max(0,Math.min(rect.width,ev.clientX-rect.left));drag.y=Math.max(0,Math.min(rect.height,ev.clientY-rect.top));
+    if(Math.abs(ev.clientX-drag.startX)+Math.abs(ev.clientY-drag.startY)>5)drag.moved=true;
+    clearBondHover();
+    const hit=document.elementFromPoint(ev.clientX,ev.clientY),cluster=hit?.closest?.('.atom-cluster');
+    if(cluster&&cluster.dataset.id!==String(drag.sourceId)&&cluster.dataset.compatible==='true')cluster.classList.add('hover-target');
+    renderBonds();
+  }
+
+  function finishBondDrag(ev,cancelled=false) {
+    const drag=state.bondDrag;if(!drag)return;const sourceId=drag.sourceId;let targetId=null;
+    if(!cancelled){const hit=document.elementFromPoint(ev.clientX,ev.clientY);const cluster=hit?.closest?.('.atom-cluster');if(cluster)targetId=Number(cluster.dataset.id);}
+    clearBondHover();state.bondDrag=null;
+    if(targetId&&targetId!==sourceId){connectAtoms(sourceId,targetId);return;}
+    if(!drag.moved&&!cancelled){state.pendingBondAtomId=sourceId;state.selectedAtomId=sourceId;clearGuide();render();showToast('Now click a green target atom.');return;}
+    state.pendingBondAtomId=null;state.selectedAtomId=sourceId;setGuide('Bond gesture cancelled','Drag a glowing electron dot and release it directly on a green compatible atom.','info');render();
+  }
+
+  function sidePoint(side,offset=0,radius=45) {
+    const angle=-Math.PI/2+side*Math.PI/2,tangentX=-Math.sin(angle),tangentY=Math.cos(angle);
+    return {x:Math.cos(angle)*radius+tangentX*offset,y:Math.sin(angle)*radius+tangentY*offset};
+  }
+
+  function preferredSideOrder(atom) {
+    const occupied=new Set();
+    state.bonds.filter(b=>b.a===atom.id||b.b===atom.id).forEach(bond=>{
+      const other=getAtom(bond.a===atom.id?bond.b:bond.a);if(!other)return;
+      const angle=Math.atan2(other.y-atom.y,other.x-atom.x);let side=Math.round((angle+Math.PI/2)/(Math.PI/2))%4;if(side<0)side+=4;occupied.add(side);
+    });
+    const all=[0,1,2,3];return all.filter(x=>!occupied.has(x)).concat(all.filter(x=>occupied.has(x)));
+  }
+
+  function positionAroundAtom(element,side,offset=0,radius=45) {
+    const p=sidePoint(side,offset,radius);element.style.left=`calc(50% + ${p.x}px)`;element.style.top=`calc(50% + ${p.y}px)`;
   }
 
   function renderAtoms(validation) {
-    const stateById = new Map(validation.atomStates.map(s=>[s.atomId,s]));
-    atomLayer.innerHTML = '';
-    for (const atom of state.atoms) {
-      const e = E.ELEMENTS[atom.symbol];
-      const atomState = stateById.get(atom.id);
-      const node = document.createElement('button');
-      node.className = 'atom-node';
-      if (state.selectedAtomId===atom.id || state.pendingBondAtomId===atom.id) node.classList.add('selected');
-      if (atomState?.state==='invalid') node.classList.add('invalid');
-      else if (atomState?.state==='open') node.classList.add('open');
-      node.style.left = `${atom.x}px`; node.style.top = `${atom.y}px`; node.style.background = e.color; node.style.color = e.text;
-      node.dataset.id = atom.id;
-      node.innerHTML = `<span>${escapeHtml(atom.symbol)}</span>${atom.charge ? `<span class="atom-charge">${displayCharge(atom.charge)}</span>` : ''}`;
-      node.title = `${e.name}. Click another atom to bond. Double-click to delete.`;
-      node.addEventListener('click',ev=>{
-        ev.stopPropagation();
-        if (node._dragged) return;
-        selectAtom(atom.id);
+    const stateById=new Map(validation.atomStates.map(s=>[s.atomId,s]));const sourceId=state.bondDrag?.sourceId||state.pendingBondAtomId;atomLayer.innerHTML='';
+    for(const atom of state.atoms){
+      const e=E.ELEMENTS[atom.symbol],atomState=stateById.get(atom.id),covalentSites=remainingBondCapacity(atom,atomState),interactionSites=availableInteractionSites(atom,atomState);
+      const cluster=document.createElement('div');cluster.className='atom-cluster';cluster.dataset.id=atom.id;cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;
+      if(state.selectedAtomId===atom.id)cluster.classList.add('selected');if(state.pendingBondAtomId===atom.id)cluster.classList.add('pending');if(interactionSites===0)cluster.classList.add('closed-shell');
+      if(sourceId&&sourceId!==atom.id){const resolution=resolveBondRequest(sourceId,atom.id,state.bondType);cluster.classList.add(resolution.ok?'compatible':'incompatible');cluster.dataset.compatible=resolution.ok?'true':'false';}
+      const ring=document.createElement('span');ring.className='valence-ring';cluster.appendChild(ring);
+      const node=document.createElement('button');node.className='atom-node';if(atomState?.state==='invalid')node.classList.add('invalid');else if(atomState?.state==='open')node.classList.add('open');
+      node.style.background=e.color;node.style.color=e.text;node.dataset.id=atom.id;node.innerHTML=`<span>${escapeHtml(atom.symbol)}</span>${atom.charge?`<span class="atom-charge">${displayCharge(atom.charge)}</span>`:''}`;
+      if(e.category==='noble gas')node.title=`${e.name}: filled valence shell; no ordinary bond under normal conditions.`;else if(interactionSites)node.title=`${e.name}: ${interactionSites} available bonding site${interactionSites===1?'':'s'}. Drag a glowing dot.`;else node.title=`${e.name}: current valence complete. Double-click to delete.`;
+      node.addEventListener('click',ev=>{ev.stopPropagation();if(node._dragged)return;selectAtom(atom.id);});node.addEventListener('dblclick',ev=>{ev.stopPropagation();removeAtom(atom.id);});enableAtomDrag(node,cluster,atom);cluster.appendChild(node);
+      const sideOrder=preferredSideOrder(atom),handleSides=sideOrder.slice(0,interactionSites);
+      const nonbondingRaw=Number(atomState?.inferredNonbondingElectrons ?? e.valenceElectrons-Number(atom.charge||0));const nonbonding=Math.max(0,Math.min(8,Math.round(nonbondingRaw)));const staticCount=Math.max(0,Math.min(8,nonbonding-covalentSites));
+      if(state.showLewisElectrons){
+        const staticSides=sideOrder.filter(x=>!handleSides.includes(x)).concat(handleSides);let remaining=staticCount,sideIndex=0;
+        while(remaining>0&&sideIndex<staticSides.length){const side=staticSides[sideIndex++],count=remaining>=2?2:1;remaining-=count;(count===2?[-4.5,4.5]:[0]).forEach(offset=>{const dot=document.createElement('span');dot.className='electron-dot';if(count===1&&interactionSites===0&&atomState?.state==='open')dot.classList.add('radical');positionAroundAtom(dot,side,offset,44);cluster.appendChild(dot);});}
+      }
+      handleSides.forEach((side,index)=>{
+        const handle=document.createElement('button');handle.className='bond-handle';if(interactionSites>covalentSites)handle.classList.add('ionic');handle.type='button';handle.setAttribute('aria-label',`Start bond from ${e.name}, site ${index+1}`);
+        handle.title=state.bondType==='auto'?'Drag to another atom; auto mode chooses the bond.':`Drag to attempt a ${bondLabel(state.bondType).toLowerCase()}.`;positionAroundAtom(handle,side,0,47);
+        handle.addEventListener('pointerdown',ev=>beginBondFromAtom(atom.id,ev));handle.addEventListener('click',ev=>ev.stopPropagation());cluster.appendChild(handle);
       });
-      node.addEventListener('dblclick',ev=>{ev.stopPropagation();removeAtom(atom.id);});
-      enableAtomDrag(node,atom);
-      atomLayer.appendChild(node);
+      if(e.category==='noble gas'){const badge=document.createElement('span');badge.className='closed-shell-badge';badge.textContent=atom.symbol==='He'?'2 e⁻ · full shell':'8 e⁻ · full shell';cluster.appendChild(badge);}
+      atomLayer.appendChild(cluster);
     }
   }
 
-  function enableAtomDrag(node,atom) {
+  function enableAtomDrag(node,cluster,atom) {
     let dragging=false,moved=false,startX=0,startY=0,originX=0,originY=0,historySnapshot='';
-    node.addEventListener('pointerdown',ev=>{
-      dragging=true;moved=false;startX=ev.clientX;startY=ev.clientY;originX=atom.x;originY=atom.y;historySnapshot=snapshot();
-      node.setPointerCapture(ev.pointerId);
-    });
-    node.addEventListener('pointermove',ev=>{
-      if(!dragging)return;
-      const dx=ev.clientX-startX,dy=ev.clientY-startY;
-      if(Math.abs(dx)+Math.abs(dy)>4)moved=true;
-      const rect=workspace.getBoundingClientRect();
-      atom.x=Math.max(31,Math.min(rect.width-31,originX+dx));atom.y=Math.max(31,Math.min(rect.height-31,originY+dy));
-      node.style.left=`${atom.x}px`;node.style.top=`${atom.y}px`;renderBonds();
-    });
-    node.addEventListener('pointerup',ev=>{
-      if(!dragging)return;dragging=false;
-      try{node.releasePointerCapture(ev.pointerId);}catch(_){}
-      if(moved){
-        node._dragged=true;setTimeout(()=>{node._dragged=false;},0);pushHistory(historySnapshot);
-        state.pendingBondAtomId=null;state.selectedAtomId=atom.id;renderInspector(currentValidation());
-      }
-    });
+    node.addEventListener('pointerdown',ev=>{dragging=true;moved=false;startX=ev.clientX;startY=ev.clientY;originX=atom.x;originY=atom.y;historySnapshot=snapshot();node.setPointerCapture(ev.pointerId);});
+    node.addEventListener('pointermove',ev=>{if(!dragging)return;const dx=ev.clientX-startX,dy=ev.clientY-startY;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;const rect=workspace.getBoundingClientRect();atom.x=Math.max(58,Math.min(rect.width-58,originX+dx));atom.y=Math.max(58,Math.min(rect.height-58,originY+dy));cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;renderBonds();});
+    node.addEventListener('pointerup',ev=>{if(!dragging)return;dragging=false;try{node.releasePointerCapture(ev.pointerId);}catch(_){}if(moved){node._dragged=true;setTimeout(()=>{node._dragged=false;},0);pushHistory(historySnapshot);state.pendingBondAtomId=null;state.bondDrag=null;state.selectedAtomId=atom.id;clearGuide();render();}});
   }
 
   function svgLine(x1,y1,x2,y2,attrs={}) {
-    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-    line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);
-    Object.entries(attrs).forEach(([k,v])=>line.setAttribute(k,v));return line;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x1);line.setAttribute('y1',y1);line.setAttribute('x2',x2);line.setAttribute('y2',y2);Object.entries(attrs).forEach(([k,v])=>line.setAttribute(k,v));return line;
+  }
+  function svgCircle(cx,cy,r,attrs={}) {
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');circle.setAttribute('cx',cx);circle.setAttribute('cy',cy);circle.setAttribute('r',r);Object.entries(attrs).forEach(([k,v])=>circle.setAttribute(k,v));return circle;
+  }
+  function svgText(x,y,text,attrs={}) {
+    const node=document.createElementNS('http://www.w3.org/2000/svg','text');node.setAttribute('x',x);node.setAttribute('y',y);node.textContent=text;Object.entries(attrs).forEach(([k,v])=>node.setAttribute(k,v));return node;
   }
 
   function renderBonds() {
-    const w=workspace.clientWidth,h=workspace.clientHeight;
-    bondLayer.setAttribute('viewBox',`0 0 ${w} ${h}`);bondLayer.innerHTML='';
+    const w=workspace.clientWidth,h=workspace.clientHeight;bondLayer.setAttribute('viewBox',`0 0 ${w} ${h}`);bondLayer.innerHTML='';
     for(const bond of state.bonds){
-      const a=getAtom(bond.a),b=getAtom(bond.b);if(!a||!b)continue;
-      const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;
-      const type=bond.type||'single';
-      const hit=svgLine(a.x,a.y,b.x,b.y,{class:'bond-hit'});
-      hit.addEventListener('click',ev=>{ev.stopPropagation();showToast('Double-click the bond to remove it.');});
-      hit.addEventListener('dblclick',ev=>{ev.stopPropagation();removeBond(bond.a,bond.b);});
-      bondLayer.appendChild(hit);
-      if(type==='ionic'){
-        const line=svgLine(a.x,a.y,b.x,b.y,{class:'bond-visible',stroke:'#7b8ca2','stroke-width':'4','stroke-linecap':'round','stroke-dasharray':'4 10'});bondLayer.appendChild(line);continue;
-      }
-      const spacing=6;
-      const offsets=type==='double'?[-spacing/2,spacing/2]:type==='triple'?[-spacing,0,spacing]:type==='aromatic'?[-spacing/2,spacing/2]:[0];
+      const a=getAtom(bond.a),b=getAtom(bond.b);if(!a||!b)continue;const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,nx=-uy,ny=ux,type=bond.type||'single';
+      const hit=svgLine(a.x,a.y,b.x,b.y,{class:'bond-hit'});hit.addEventListener('click',ev=>{ev.stopPropagation();showToast('Double-click the bond to remove it.');});hit.addEventListener('dblclick',ev=>{ev.stopPropagation();removeBond(bond.a,bond.b);});bondLayer.appendChild(hit);
+      if(type==='ionic'){bondLayer.appendChild(svgLine(a.x,a.y,b.x,b.y,{class:'bond-visible',stroke:'#7b8ca2','stroke-width':'4','stroke-linecap':'round','stroke-dasharray':'4 10'}));continue;}
+      const spacing=6,offsets=type==='double'?[-spacing/2,spacing/2]:type==='triple'?[-spacing,0,spacing]:type==='aromatic'?[-spacing/2,spacing/2]:[0];
       offsets.forEach((offset,index)=>{
-        const attrs={class:'bond-visible',stroke:'#8593a7','stroke-width':type==='aromatic'?'5':'7','stroke-linecap':'round'};
-        if(type==='aromatic'&&index===1)attrs['stroke-dasharray']='9 7';
-        const line=svgLine(a.x+nx*offset,a.y+ny*offset,b.x+nx*offset,b.y+ny*offset,attrs);bondLayer.appendChild(line);
+        const attrs={class:'bond-visible',stroke:'#8593a7','stroke-width':type==='aromatic'?'5':'7','stroke-linecap':'round'};if(type==='aromatic'&&index===1)attrs['stroke-dasharray']='9 7';
+        bondLayer.appendChild(svgLine(a.x+nx*offset,a.y+ny*offset,b.x+nx*offset,b.y+ny*offset,attrs));
+        if(state.showLewisElectrons){const mx=(a.x+b.x)/2+nx*offset,my=(a.y+b.y)/2+ny*offset;bondLayer.appendChild(svgCircle(mx-ux*4,my-uy*4,3,{class:'bond-electron'}));bondLayer.appendChild(svgCircle(mx+ux*4,my+uy*4,3,{class:'bond-electron'}));}
       });
     }
+    if(state.bondDrag){const source=getAtom(state.bondDrag.sourceId);if(source){bondLayer.appendChild(svgLine(source.x,source.y,state.bondDrag.x,state.bondDrag.y,{class:'bond-preview'}));const mx=(source.x+state.bondDrag.x)/2,my=(source.y+state.bondDrag.y)/2-8;bondLayer.appendChild(svgText(mx,my,bondLabel(state.bondType),{class:'bond-preview-label','text-anchor':'middle'}));}}
   }
 
   function renderInspector(validation) {
     const atom=getAtom(state.selectedAtomId);
     if(!atom){inspector.innerHTML='<p class="inspector-empty">Nothing selected. Click an atom in the workspace.</p>';return;}
-    const e=E.ELEMENTS[atom.symbol];
-    const s=validation.atomStates.find(x=>x.atomId===atom.id);
-    const neighborBonds=state.bonds.filter(b=>b.a===atom.id||b.b===atom.id);
+    const e=E.ELEMENTS[atom.symbol],atomState=validation.atomStates.find(x=>x.atomId===atom.id),neighborBonds=state.bonds.filter(b=>b.a===atom.id||b.b===atom.id),sites=availableInteractionSites(atom,atomState);
+    const shellTarget=(atom.symbol==='H'||atom.symbol==='He')?2:(e.flexible?null:8);const shellValue=Number(atomState?.shellElectrons);const shellText=shellTarget==null?'condition-dependent':`${Number.isFinite(shellValue)?Math.round(shellValue*10)/10:'—'} / ${shellTarget} e⁻`;
+    let callout='';
+    if(e.category==='noble gas')callout=`<div class="inspector-callout closed"><strong>Closed shell.</strong> ${escapeHtml(e.name)} already has its stable ${atom.symbol==='He'?'duet':'octet'}. No ordinary bond handle is available.</div>`;
+    else if(sites)callout=`<div class="inspector-callout ready"><strong>${sites} bondable electron${sites===1?'':'s'} available.</strong> Drag a glowing green dot. Current mode: ${escapeHtml(bondLabel(state.bondType))}.</div>`;
+    else callout='<div class="inspector-callout warning"><strong>Current valence is complete.</strong> Remove or change an existing bond, or adjust formal charge only when chemically justified.</div>';
     inspector.innerHTML=`
       <div class="inspector-row"><span>Element</span><strong>${escapeHtml(e.name)} (${atom.symbol})</strong></div>
       <div class="inspector-row"><span>Atomic number</span><strong>${e.atomicNumber}</strong></div>
       <div class="inspector-row"><span>Atomic mass</span><strong>${e.mass}</strong></div>
       <div class="inspector-row"><span>Category</span><strong>${escapeHtml(e.category)}</strong></div>
+      <div class="inspector-row"><span>Valence electrons</span><strong>${e.valenceElectrons}</strong></div>
+      ${callout}
+      ${sites?`<button class="btn secondary small full" id="startSelectedBond">Start bond from ${escapeHtml(atom.symbol)}</button>`:''}
       <p class="subhead" style="margin-top:14px">Formal charge</p>
       <div class="charge-controls"><button class="btn ghost icon-btn" id="chargeMinus">−</button><div class="charge-value">${displayCharge(atom.charge)}</div><button class="btn ghost icon-btn" id="chargePlus">+</button></div>
       <button class="btn ghost small full" id="chargeReset">Reset charge</button>
       <div class="divider"></div>
-      <div class="inspector-row"><span>Covalent bond order</span><strong>${s?.covalentOrder ?? 0}</strong></div>
-      <div class="inspector-row"><span>Allowed valence</span><strong>${s?.allowed?.join(' / ') || '0'}</strong></div>
-      <div class="inspector-row"><span>Inferred nonbonding e⁻</span><strong>${s?.inferredNonbondingElectrons ?? '—'}</strong></div>
-      <div class="inspector-row"><span>Electron shell count</span><strong>${s?.shellElectrons ?? '—'}</strong></div>
-      <div class="inspector-row"><span>Status</span><strong>${escapeHtml(s?.state || 'unknown')}</strong></div>
-      <p class="helper-text">${escapeHtml(s?.detail || '')}</p>
+      <div class="inspector-row"><span>Covalent bond order</span><strong>${atomState?.covalentOrder ?? 0}</strong></div>
+      <div class="inspector-row"><span>Allowed valence</span><strong>${atomState?.allowed?.join(' / ') || '0'}</strong></div>
+      <div class="inspector-row"><span>Nonbonding electrons</span><strong>${atomState?.inferredNonbondingElectrons ?? '—'}</strong></div>
+      <div class="inspector-row"><span>Lewis shell</span><strong>${shellText}</strong></div>
+      <div class="inspector-row"><span>Status</span><strong>${escapeHtml(atomState?.state || 'unknown')}</strong></div>
+      <p class="helper-text">${escapeHtml(atomState?.detail || '')}${e.flexible?' Transition-metal Lewis dots are only a simplified teaching representation.':''}</p>
       <div class="divider"></div>
       <p class="subhead">Connected bonds</p>
       <div class="bond-list" id="selectedBondList">${neighborBonds.length?'':'<p class="inspector-empty">No bonds connected.</p>'}</div>
       <button class="btn danger small full" id="deleteSelectedAtom" style="margin-top:12px">Delete atom</button>`;
-    $('chargeMinus').addEventListener('click',()=>changeSelectedCharge(-1));
-    $('chargePlus').addEventListener('click',()=>changeSelectedCharge(1));
-    $('chargeReset').addEventListener('click',()=>setSelectedCharge(0));
-    $('deleteSelectedAtom').addEventListener('click',()=>removeAtom(atom.id));
-    const list=$('selectedBondList');
-    neighborBonds.forEach(bond=>{
-      const other=getAtom(bond.a===atom.id?bond.b:bond.a);
-      const item=document.createElement('div');item.className='bond-item';
-      item.innerHTML=`<span><strong>${escapeHtml(other?.symbol||'?')}</strong> · ${escapeHtml(E.BOND_TYPES[bond.type]?.label||bond.type)}</span><button title="Remove bond">×</button>`;
-      item.querySelector('button').addEventListener('click',()=>removeBond(bond.a,bond.b));list.appendChild(item);
-    });
+    if(sites)$('startSelectedBond').addEventListener('click',()=>beginBondFromAtom(atom.id));
+    $('chargeMinus').addEventListener('click',()=>changeSelectedCharge(-1));$('chargePlus').addEventListener('click',()=>changeSelectedCharge(1));$('chargeReset').addEventListener('click',()=>setSelectedCharge(0));$('deleteSelectedAtom').addEventListener('click',()=>removeAtom(atom.id));
+    const list=$('selectedBondList');neighborBonds.forEach(bond=>{const other=getAtom(bond.a===atom.id?bond.b:bond.a);const item=document.createElement('div');item.className='bond-item';item.innerHTML=`<span><strong>${escapeHtml(other?.symbol||'?')}</strong> · ${escapeHtml(E.BOND_TYPES[bond.type]?.label||bond.type)}</span><button title="Remove bond">×</button>`;item.querySelector('button').addEventListener('click',()=>removeBond(bond.a,bond.b));list.appendChild(item);});
   }
 
   function setSelectedCharge(value) {
-    const atom=getAtom(state.selectedAtomId);if(!atom)return;
-    value=Math.max(-4,Math.min(4,Number(value)));
-    if(value===Number(atom.charge||0))return;
-    saveHistory();atom.charge=value;render();
+    const atom=getAtom(state.selectedAtomId);if(!atom)return;value=Math.max(-4,Math.min(4,Number(value)));if(value===Number(atom.charge||0))return;
+    saveHistory();atom.charge=value;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();
   }
   function changeSelectedCharge(delta){const atom=getAtom(state.selectedAtomId);if(atom)setSelectedCharge(Number(atom.charge||0)+delta);}
 
@@ -1519,66 +1693,37 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   }
 
   function renderSummary(validation,identity) {
-    const empty=!state.atoms.length;
-    const formula=identity?.molecule?.formula || validation.formula || '—';
-    if(empty){
-      $('moleculeName').textContent='No structure yet';$('moleculeDetail').textContent='Formula, molecular identity, and validation will appear here.';
-      $('structureStatus').className='status-pill open';$('structureStatus').textContent='Empty';
-    } else {
-      $('moleculeName').innerHTML=`${escapeHtml(identity.name)} · <span class="formula">${formulaHtml(formula)}</span>`;
-      const detail=validation.status==='invalid'?(validation.errors[0]||'Invalid structure'):validation.status==='open'?'No over-valence error, but the structure has open valence, radical, or flexible coordination character.':'Configured valence and charge rules are satisfied.';
-      $('moleculeDetail').textContent=detail;
-      $('structureStatus').className=`status-pill ${validation.status}`;$('structureStatus').textContent=validation.status;
-    }
-    $('metricFormula').innerHTML=empty?'—':formulaHtml(formula);
-    $('metricMass').textContent=empty?'—':`${validation.mass.toFixed(3)} g/mol`;
-    $('metricCharge').textContent=empty?'0':displayCharge(validation.charge);
-    $('metricComponents').textContent=String(validation.components.length);
-    const dbe=E.degreeOfUnsaturation(validation.counts);$('metricDbe').textContent=dbe==null?'N/A':String(dbe);
-    emptyState.style.display=empty?'grid':'none';
+    const empty=!state.atoms.length,disconnected=!empty&&validation.components.length>1;
+    const baseFormula=identity?.molecule?.formula||validation.formula||'—';const displayedFormula=disconnected?validation.components.map(componentFormula).join(' + '):baseFormula;
+    if(empty){$('moleculeName').textContent='No structure yet';$('moleculeDetail').textContent='Formula, molecular identity, and validation will appear here.';$('structureStatus').className='status-pill open';$('structureStatus').textContent='Empty';}
+    else if(disconnected){$('moleculeName').innerHTML=`Unbonded mixture · <span class="formula">${formulaHtml(displayedFormula)}</span>`;$('moleculeDetail').textContent=`The canvas contains ${validation.components.length} disconnected species. They have not formed one molecule.`;$('structureStatus').className='status-pill mixture';$('structureStatus').textContent='Mixture';}
+    else{$('moleculeName').innerHTML=`${escapeHtml(identity.name)} · <span class="formula">${formulaHtml(baseFormula)}</span>`;const detail=validation.status==='invalid'?(validation.errors[0]||'Invalid structure'):validation.status==='open'?'No over-valence error, but the structure has open valence, radical, or flexible coordination character.':'Configured valence and charge rules are satisfied.';$('moleculeDetail').textContent=detail;$('structureStatus').className=`status-pill ${validation.status}`;$('structureStatus').textContent=validation.status;}
+    $('metricFormula').innerHTML=empty?'—':formulaHtml(displayedFormula);$('metricMass').textContent=empty?'—':`${validation.mass.toFixed(3)} g/mol`;$('metricCharge').textContent=empty?'0':displayCharge(validation.charge);$('metricComponents').textContent=String(validation.components.length);
+    const dbe=E.degreeOfUnsaturation(validation.counts);$('metricDbe').textContent=dbe==null?'N/A':String(dbe);emptyState.style.display=empty?'grid':'none';
   }
 
   function render() {
-    const validation=currentValidation();
-    const identity=state.atoms.length?currentIdentity():null;
-    renderAtoms(validation);renderBonds();renderInspector(validation);renderValidation(validation);renderSummary(validation,identity);renderSaved();
+    const validation=currentValidation(),identity=state.atoms.length?currentIdentity():null;
+    renderAtoms(validation);renderBonds();renderInspector(validation);renderValidation(validation);renderSummary(validation,identity);renderGuide(validation);renderSaved();
   }
 
   function clearWorkspace(record=true) {
-    if(record&&state.atoms.length)saveHistory();
-    state.atoms=[];state.bonds=[];state.selectedAtomId=null;state.pendingBondAtomId=null;render();
+    if(record&&state.atoms.length)saveHistory();state.atoms=[];state.bonds=[];state.selectedAtomId=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();
   }
 
   function undo() {
-    const prev=state.history.pop();if(!prev){showToast('Nothing to undo.');return;}
-    const data=JSON.parse(prev);state.atoms=data.atoms;state.bonds=data.bonds;state.nextId=data.nextId;state.selectedAtomId=null;state.pendingBondAtomId=null;render();
+    const prev=state.history.pop();if(!prev){showToast('Nothing to undo.');return;}const data=JSON.parse(prev);state.atoms=data.atoms;state.bonds=data.bonds;state.nextId=data.nextId;state.selectedAtomId=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();
   }
 
   function centerMolecule(record=true) {
-    if(!state.atoms.length)return;
-    if(record)saveHistory();
-    const rect=workspace.getBoundingClientRect();
-    const minX=Math.min(...state.atoms.map(a=>a.x)),maxX=Math.max(...state.atoms.map(a=>a.x));
-    const minY=Math.min(...state.atoms.map(a=>a.y)),maxY=Math.max(...state.atoms.map(a=>a.y));
-    const dx=rect.width/2-(minX+maxX)/2,dy=rect.height/2-(minY+maxY)/2;
-    state.atoms.forEach(a=>{a.x=Math.max(31,Math.min(rect.width-31,a.x+dx));a.y=Math.max(31,Math.min(rect.height-31,a.y+dy));});render();
+    if(!state.atoms.length)return;if(record)saveHistory();const rect=workspace.getBoundingClientRect();const minX=Math.min(...state.atoms.map(a=>a.x)),maxX=Math.max(...state.atoms.map(a=>a.x)),minY=Math.min(...state.atoms.map(a=>a.y)),maxY=Math.max(...state.atoms.map(a=>a.y));const dx=rect.width/2-(minX+maxX)/2,dy=rect.height/2-(minY+maxY)/2;
+    state.atoms.forEach(a=>{a.x=Math.max(58,Math.min(rect.width-58,a.x+dx));a.y=Math.max(58,Math.min(rect.height-58,a.y+dy));});clearGuide();render();
   }
 
   function loadGraph(graph,announce='Structure loaded.') {
-    if(state.atoms.length)saveHistory();
-    const rect=workspace.getBoundingClientRect();
-    const sourceAtoms=graph.atoms.map(a=>({...a}));
-    const minX=Math.min(...sourceAtoms.map(a=>a.x||0)),maxX=Math.max(...sourceAtoms.map(a=>a.x||0));
-    const minY=Math.min(...sourceAtoms.map(a=>a.y||0)),maxY=Math.max(...sourceAtoms.map(a=>a.y||0));
-    const sourceW=Math.max(100,maxX-minX),sourceH=Math.max(100,maxY-minY);
-    const scale=Math.min(1.18,(rect.width*.72)/sourceW,(rect.height*.72)/sourceH);
-    const idMap=new Map();state.atoms=[];state.bonds=[];
-    sourceAtoms.forEach(a=>{
-      const id=state.nextId++;idMap.set(a.id,id);
-      state.atoms.push({id,symbol:a.symbol,charge:Number(a.charge||0),x:rect.width/2+(a.x-(minX+maxX)/2)*scale,y:rect.height/2+(a.y-(minY+maxY)/2)*scale});
-    });
-    graph.bonds.forEach(b=>state.bonds.push({a:idMap.get(b.a),b:idMap.get(b.b),type:b.type||'single',order:E.BOND_TYPES[b.type||'single']?.order ?? b.order ?? 1}));
-    state.selectedAtomId=null;state.pendingBondAtomId=null;render();showToast(announce,'good');
+    if(state.atoms.length)saveHistory();const rect=workspace.getBoundingClientRect(),sourceAtoms=graph.atoms.map(a=>({...a}));const minX=Math.min(...sourceAtoms.map(a=>a.x||0)),maxX=Math.max(...sourceAtoms.map(a=>a.x||0)),minY=Math.min(...sourceAtoms.map(a=>a.y||0)),maxY=Math.max(...sourceAtoms.map(a=>a.y||0));const sourceW=Math.max(100,maxX-minX),sourceH=Math.max(100,maxY-minY),scale=Math.min(1.18,(rect.width*.72)/sourceW,(rect.height*.72)/sourceH),idMap=new Map();state.atoms=[];state.bonds=[];
+    sourceAtoms.forEach(a=>{const id=state.nextId++;idMap.set(a.id,id);state.atoms.push({id,symbol:a.symbol,charge:Number(a.charge||0),x:rect.width/2+(a.x-(minX+maxX)/2)*scale,y:rect.height/2+(a.y-(minY+maxY)/2)*scale});});
+    graph.bonds.forEach(b=>state.bonds.push({a:idMap.get(b.a),b:idMap.get(b.b),type:b.type||'single',order:E.BOND_TYPES[b.type||'single']?.order??b.order??1}));state.selectedAtomId=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();showToast(announce,'good');
   }
 
   function loadPreset(key,scroll=true) {
@@ -1614,7 +1759,7 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
         state.atoms.push(h);state.bonds.push({a:atom.id,b:h.id,type:'single',order:1});
       }
     }
-    render();showToast(`${total} hydrogen atom${total===1?'':'s'} added.`,'good');
+    state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();showToast(`${total} hydrogen atom${total===1?'':'s'} added.`,'good');
   }
 
   function buildPalette(filter='') {
@@ -1747,14 +1892,18 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
     $('testsModal').classList.add('show');
   }
 
-  workspace.addEventListener('click',()=>{state.selectedAtomId=null;state.pendingBondAtomId=null;render();});
+  workspace.addEventListener('click',()=>{state.selectedAtomId=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();});
   workspace.addEventListener('dragover',ev=>{ev.preventDefault();workspace.classList.add('dragover');});
   workspace.addEventListener('dragleave',()=>workspace.classList.remove('dragover'));
   workspace.addEventListener('drop',ev=>{ev.preventDefault();workspace.classList.remove('dragover');const symbol=ev.dataTransfer.getData('text/element');if(!symbol)return;const rect=workspace.getBoundingClientRect();addAtom(symbol,ev.clientX-rect.left,ev.clientY-rect.top);});
+  document.addEventListener('pointermove',onBondPointerMove,{passive:false});
+  document.addEventListener('pointerup',ev=>finishBondDrag(ev,false));
+  document.addEventListener('pointercancel',ev=>finishBondDrag(ev,true));
 
   document.querySelectorAll('[data-bond-type]').forEach(btn=>btn.addEventListener('click',()=>{
-    state.bondType=btn.dataset.bondType;document.querySelectorAll('[data-bond-type]').forEach(b=>b.classList.toggle('active',b===btn));showToast(`${E.BOND_TYPES[state.bondType].label} selected.`);
+    state.bondType=btn.dataset.bondType;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();document.querySelectorAll('[data-bond-type]').forEach(b=>b.classList.toggle('active',b===btn));showToast(`${bondLabel(state.bondType)} selected.`);render();
   }));
+  $('lewisToggle').addEventListener('click',()=>{state.showLewisElectrons=!state.showLewisElectrons;const btn=$('lewisToggle');btn.classList.toggle('active',state.showLewisElectrons);btn.setAttribute('aria-pressed',String(state.showLewisElectrons));btn.title=state.showLewisElectrons?'Hide simplified Lewis valence electrons':'Show simplified Lewis valence electrons';render();});
   document.querySelectorAll('[data-load-preset]').forEach(btn=>btn.addEventListener('click',()=>loadPreset(btn.dataset.loadPreset)));
   $('elementSearch').addEventListener('input',ev=>buildPalette(ev.target.value));
   $('presetSearch').addEventListener('input',ev=>buildPresets(ev.target.value));
@@ -1766,11 +1915,11 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   document.querySelectorAll('[data-equation]').forEach(btn=>btn.addEventListener('click',()=>{$('equationInput').value=btn.dataset.equation;balanceCustom();}));
   $('howBtn').addEventListener('click',()=>$('howModal').classList.add('show'));$('testsBtn').addEventListener('click',runTests);
   ['jumpBtn','heroStartBtn'].forEach(id=>$(id).addEventListener('click',()=>$('laboratory').scrollIntoView({behavior:'smooth',block:'start'})));
-  document.querySelectorAll('[data-close-modal]').forEach(btn=>btn.addEventListener('click',() => $(btn.dataset.closeModal).classList.remove('show')));
+  document.querySelectorAll('[data-close-modal]').forEach(btn=>btn.addEventListener('click',()=>$(btn.dataset.closeModal).classList.remove('show')));
   document.querySelectorAll('.modal-backdrop').forEach(modal=>modal.addEventListener('click',ev=>{if(ev.target===modal)modal.classList.remove('show');}));
   document.addEventListener('keydown',ev=>{
     const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
-    if(ev.key==='Escape')document.querySelectorAll('.modal-backdrop.show').forEach(m=>m.classList.remove('show'));
+    if(ev.key==='Escape'){document.querySelectorAll('.modal-backdrop.show').forEach(m=>m.classList.remove('show'));if(state.pendingBondAtomId||state.bondDrag){state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();render();}}
     if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='z'){ev.preventDefault();undo();}
     if(!editing&&(ev.key==='Delete'||ev.key==='Backspace')&&state.selectedAtomId){ev.preventDefault();removeAtom(state.selectedAtomId);}
   });
@@ -1780,6 +1929,6 @@ h1{font-size:clamp(2.35rem,5.5vw,5.1rem);line-height:.98;letter-spacing:-.064em;
   setTimeout(()=>loadPreset('H2O',false),250);
 })();
 
-  </script>
+</script>
 </body>
 </html>
