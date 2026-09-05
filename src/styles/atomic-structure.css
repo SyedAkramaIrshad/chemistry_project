@@ -1,0 +1,345 @@
+.atomic-lab{
+  --atomic-vacuum:#11172f;
+  --atomic-panel:#182442;
+  --atomic-violet:#705cf6;
+  --atomic-cyan:#4fd7e5;
+  --atomic-amber:#f6b94b;
+  --atomic-electron:#a9e36b;
+  --atomic-silver:#eaf0f5;
+  --atomic-ink:#172642;
+  --atomic-muted:#667891;
+  position:relative;
+  margin-top:72px;
+  padding:0 18px 84px;
+  color:var(--atomic-ink);
+  scroll-margin-top:96px;
+}
+.atomic-lab:before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-34px 0 0;
+  border-radius:44px;
+  background:
+    radial-gradient(circle at 76% 6%,rgba(112,92,246,.10),transparent 29%),
+    radial-gradient(circle at 11% 25%,rgba(79,215,229,.11),transparent 25%),
+    linear-gradient(180deg,rgba(236,242,248,.62),rgba(244,247,250,.12));
+}
+.atomic-header{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:32px;
+  max-width:1500px;
+  margin:0 auto 24px;
+}
+.atomic-header>div:first-child{max-width:980px}
+.atomic-header h2{
+  max-width:950px;
+  margin:9px 0 0;
+  color:var(--atomic-vacuum);
+  font-family:"Avenir Next Condensed","Arial Narrow",sans-serif;
+  font-size:clamp(3.8rem,6.7vw,7.2rem);
+  font-weight:900;
+  letter-spacing:-.072em;
+  line-height:.79;
+}
+.atomic-header>div:first-child>p:last-child{
+  max-width:850px;
+  margin:20px 0 0;
+  color:var(--atomic-muted);
+  font-size:.94rem;
+  line-height:1.7;
+}
+.atomic-condition-stamp{
+  min-width:315px;
+  padding:19px 21px;
+  border:1px solid rgba(31,54,94,.14);
+  border-radius:19px;
+  background:linear-gradient(145deg,rgba(255,255,255,.93),rgba(236,242,248,.84));
+  box-shadow:0 16px 40px rgba(20,38,68,.10);
+}
+.atomic-condition-stamp span,.atomic-panel-heading span{
+  display:block;
+  color:#71839a;
+  font:850 .61rem/1 "SFMono-Regular",Menlo,monospace;
+  text-transform:uppercase;
+  letter-spacing:.11em;
+}
+.atomic-condition-stamp strong{display:block;margin-top:10px;color:#263b5a;font-size:.78rem}
+.atomic-condition-stamp small{display:block;margin-top:6px;color:#7c5f11;font-size:.65rem}
+.atomic-condition-stamp b{
+  display:inline-flex;
+  margin-top:12px;
+  padding:7px 9px;
+  border-radius:8px;
+  color:#223b56;
+  background:rgba(79,215,229,.20);
+  font:850 .62rem/1 "SFMono-Regular",Menlo,monospace;
+}
+.atomic-bench{
+  display:grid;
+  grid-template-columns:290px minmax(620px,1fr) 355px;
+  grid-template-areas:
+    "periodic periodic periodic"
+    "target theatre prediction"
+    "rack rack quantum"
+    "terrain terrain trace"
+    "passport passport passport";
+  gap:14px;
+  max-width:1500px;
+  margin:auto;
+  padding:14px;
+  border:1px solid rgba(31,54,94,.13);
+  border-radius:34px;
+  background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(226,235,244,.78));
+  box-shadow:0 28px 72px rgba(19,39,70,.12);
+}
+.atomic-panel{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid rgba(36,63,105,.14);
+  border-radius:21px;
+  background:#fff;
+  box-shadow:0 11px 30px rgba(19,39,70,.075);
+}
+.atomic-panel-heading{margin-bottom:15px}
+.atomic-panel-heading strong{
+  display:block;
+  margin-top:7px;
+  color:#263d5b;
+  font-family:"Avenir Next Condensed","Arial Narrow",sans-serif;
+  font-size:1.34rem;
+  line-height:1.05;
+}
+
+/* Element tuner */
+.atomic-periodic{grid-area:periodic;padding:18px 19px;background:linear-gradient(145deg,#fff,#f4f7fb)}
+.atomic-table-scroll{overflow-x:auto;padding:2px 2px 7px;overscroll-behavior-inline:contain}
+.atomic-periodic-grid{
+  display:grid;
+  grid-template-columns:repeat(18,minmax(48px,1fr));
+  grid-template-rows:repeat(4,67px);
+  gap:5px;
+  min-width:980px;
+}
+.atomic-element{
+  position:relative;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  min-width:0;
+  padding:6px 4px 5px;
+  border:1px solid rgba(44,68,104,.15);
+  border-radius:10px;
+  color:#1c3351;
+  background:#fff;
+  text-align:center;
+  transition:transform .16s,border-color .16s,box-shadow .16s;
+}
+.atomic-element:hover{z-index:2;transform:translateY(-2px);box-shadow:0 9px 17px rgba(25,43,74,.13)}
+.atomic-element:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;border-radius:10px 0 0 10px;background:var(--block)}
+.atomic-element.block-s{--block:var(--atomic-violet);background:#f5f3ff}
+.atomic-element.block-p{--block:var(--atomic-cyan);background:#eefcfd}
+.atomic-element.block-d{--block:var(--atomic-amber);background:#fff8e9}
+.atomic-element small{justify-self:start;margin-left:5px;color:#73839a;font:750 .52rem/1 "SFMono-Regular",Menlo,monospace}
+.atomic-element strong{align-self:center;font-size:1.02rem;line-height:1}
+.atomic-element span{overflow:hidden;color:#6f8095;font-size:.48rem;line-height:1.1;text-overflow:ellipsis}
+.atomic-element.selected{
+  z-index:3;
+  border-color:var(--block);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--block) 22%,transparent),0 10px 24px rgba(25,43,74,.16);
+  transform:translateY(-2px);
+}
+.atomic-element.selected strong{color:var(--atomic-vacuum)}
+.atomic-block-key{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:9px;color:#6b7d92;font-size:.63rem}
+.atomic-block-key span{display:flex;align-items:center;gap:5px;font-weight:800}.atomic-block-key i{width:8px;height:8px;border-radius:3px;background:var(--block)}
+.atomic-block-key .block-s{--block:var(--atomic-violet)}.atomic-block-key .block-p{--block:var(--atomic-cyan)}.atomic-block-key .block-d{--block:var(--atomic-amber)}
+.atomic-block-key small{margin-left:auto;color:#8290a3}
+.atomic-table-cue,.atomic-rack-cue{display:none}
+
+/* Target */
+.atomic-target{grid-area:target;padding:18px;background:linear-gradient(165deg,#fff,#f6f8fb)}
+.atomic-element-identity{
+  --block:var(--atomic-violet);
+  display:grid;
+  grid-template-columns:50px 70px 1fr;
+  gap:8px;
+  align-items:center;
+  min-height:86px;
+  padding:11px;
+  border:1px solid color-mix(in srgb,var(--block) 32%,#d9e0e9);
+  border-radius:15px;
+  background:color-mix(in srgb,var(--block) 8%,#fff);
+  box-shadow:inset 5px 0 var(--block);
+}
+.atomic-element-identity.block-p{--block:var(--atomic-cyan)}.atomic-element-identity.block-d{--block:var(--atomic-amber)}
+.atomic-element-identity>small{align-self:start;color:#73839a;font:800 .65rem/1 "SFMono-Regular",Menlo,monospace}
+.atomic-element-identity>strong{font:900 3rem/.85 "Avenir Next Condensed","Arial Narrow",sans-serif;color:#172a47}
+.atomic-element-identity div b,.atomic-element-identity div span{display:block}.atomic-element-identity div b{font-size:.85rem}.atomic-element-identity div span{margin-top:5px;color:#6f8198;font-size:.6rem;line-height:1.4}
+.atomic-target-ledger{display:grid;gap:7px;margin:13px 0 0}
+.atomic-target-ledger>div{padding:9px 10px;border:1px solid #e0e6ed;border-radius:10px;background:#fff}
+.atomic-target-ledger dt{color:#7b8a9d;font-size:.58rem;font-weight:750}.atomic-target-ledger dd{margin:4px 0 0;color:#29415e;font:800 .63rem/1.38 "SFMono-Regular",Menlo,monospace;overflow-wrap:anywhere}
+.atomic-exception{display:grid;grid-template-columns:27px 1fr;gap:8px;margin:11px 0 0;padding:9px;border-radius:10px;color:#74541c;background:#fff5dd;font-size:.62rem;line-height:1.45}
+.atomic-exception>i{display:grid;width:26px;height:26px;place-items:center;border-radius:8px;color:#172642;background:var(--atomic-amber);font-style:normal;font-weight:900}.atomic-exception b{display:block;margin-bottom:2px}
+.atomic-start-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.atomic-start-actions button{
+  min-height:40px;
+  padding:7px;
+  border:1px solid #d7e0e9;
+  border-radius:9px;
+  color:#415873;
+  background:#fff;
+  font-size:.62rem;
+  font-weight:850;
+}
+.atomic-start-actions .reference{grid-column:1/-1;border-color:transparent;color:#fff;background:var(--atomic-vacuum)}
+.atomic-action-boundary{margin:9px 0 0;color:#8291a3;font-size:.57rem;line-height:1.5}
+
+/* Signature probability cloud */
+.atomic-cloud{grid-area:theatre;position:relative;color:#eaf2ff;background:var(--atomic-vacuum)}
+.atomic-cloud-topline{position:absolute;z-index:3;top:15px;left:17px;right:17px;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#93a7c8;font:800 .55rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase;letter-spacing:.08em}
+.atomic-cloud-topline span{display:flex;align-items:center;gap:7px}.atomic-cloud-topline i{width:7px;height:7px;border-radius:50%;background:var(--atomic-cyan);box-shadow:0 0 0 4px rgba(79,215,229,.12),0 0 15px var(--atomic-cyan)}
+.atomic-cloud-topline b{color:#c1cce0;font-weight:750}
+.atomic-cloud svg{display:block;width:100%;min-height:400px}
+.atomic-reticle circle,.atomic-reticle path{fill:none;stroke:#9fb5dc;stroke-width:1;stroke-opacity:.16;stroke-dasharray:4 7}.atomic-reticle path.minor{stroke-opacity:.07}
+.atomic-node-ring{fill:none;stroke:#f6b94b;stroke-width:3;stroke-opacity:.76;stroke-dasharray:5 8}
+.atomic-node-plane{fill:none;stroke:#f6b94b;stroke-width:2;stroke-opacity:.74;stroke-dasharray:7 9}
+.atomic-nucleus{fill:#fff8d4;stroke:#f6b94b;stroke-width:4;filter:drop-shadow(0 0 12px rgba(246,185,75,.8))}
+.atomic-scan{animation:atomic-scan 5.5s ease-in-out infinite alternate}.atomic-scan path{stroke:#a9e36b;stroke-width:1.5;stroke-opacity:.28;stroke-dasharray:5 10}.atomic-scan circle{fill:#a9e36b;filter:drop-shadow(0 0 6px #a9e36b)}
+@keyframes atomic-scan{to{transform:translateX(525px)}}
+.atomic-cloud-label text:first-child{fill:#fff;font:900 52px/1 "Avenir Next Condensed","Arial Narrow",sans-serif}.atomic-cloud-label text:last-child{fill:#91a5c4;font:750 11px/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase;letter-spacing:.08em}
+.atomic-cloud-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border-top:1px solid rgba(169,191,226,.12);border-bottom:1px solid rgba(169,191,226,.12);background:rgba(255,255,255,.04)}
+.atomic-cloud-stats>div{padding:11px 12px;border-right:1px solid rgba(169,191,226,.11)}.atomic-cloud-stats>div:last-child{border:0}.atomic-cloud-stats span,.atomic-cloud-stats strong{display:block}.atomic-cloud-stats span{color:#8397b9;font-size:.52rem}.atomic-cloud-stats strong{margin-top:4px;color:#eaf2ff;font:800 .64rem/1 "SFMono-Regular",Menlo,monospace}
+.atomic-cloud-tabs{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;padding:10px 12px}
+.atomic-cloud-tabs button{min-height:34px;border:1px solid rgba(157,178,213,.15);border-radius:7px;color:#99aaca;background:#182342;font:800 .57rem/1 "SFMono-Regular",Menlo,monospace}.atomic-cloud-tabs button.active{border-color:var(--atomic-cyan);color:var(--atomic-vacuum);background:var(--atomic-cyan)}
+.atomic-cloud-boundary{margin:0;padding:0 15px 14px;color:#8fa2bf;font-size:.57rem;line-height:1.48}
+
+/* Prediction console */
+.atomic-prediction{grid-area:prediction;padding:18px;background:linear-gradient(155deg,#fff,#f8f5eb)}
+.atomic-magnetism-choice{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.atomic-magnetism-choice button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;border:1px solid #dbe2e8;border-radius:10px;color:#5f7188;background:#fff;font-size:.62rem;font-weight:850;text-transform:capitalize}.atomic-magnetism-choice button i{width:8px;height:8px;border-radius:50%;background:#aeb9c7}.atomic-magnetism-choice button.selected{border-color:var(--atomic-violet);color:#352c81;background:#f1efff}.atomic-magnetism-choice button.selected i{background:var(--atomic-violet);box-shadow:0 0 0 4px rgba(112,92,246,.13)}
+.atomic-unpaired-input{display:grid;grid-template-columns:1fr 78px;gap:8px;align-items:center;margin-top:8px;padding:8px 9px;border:1px solid #dfe5eb;border-radius:10px;background:#fff}.atomic-unpaired-input span{color:#667991;font-size:.61rem;font-weight:800}.atomic-unpaired-input input{min-width:0;width:100%;padding:8px;border:1px solid #ccd6e0;border-radius:8px;color:#263e5a;background:#f9fbfc;font:800 .7rem/1 "SFMono-Regular",Menlo,monospace}
+.atomic-check-actions{display:grid;grid-template-columns:1.5fr 1fr;gap:6px;margin-top:8px}.atomic-check-actions button{min-height:42px;padding:8px;border:1px solid #d8e0e7;border-radius:9px;color:#5b6f87;background:#fff;font-size:.61rem;font-weight:850}.atomic-check-actions .commit{border:0;color:#11172f;background:var(--atomic-amber)}
+.atomic-hint{margin:8px 0 0;padding:9px;border-radius:10px;color:#68501f;background:#fff5dc;font-size:.6rem;line-height:1.46}.atomic-hint b{display:block;margin-bottom:3px;color:#3d516c;font:850 .52rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase}
+.atomic-dimension-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px}.atomic-dimension-grid>div{min-height:78px;padding:8px;border-radius:10px;background:#f1f4f7}.atomic-dimension-grid span{display:block;color:#65788f;font:850 .52rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase}.atomic-dimension-grid p{margin:5px 0 0;color:#73849a;font-size:.56rem;line-height:1.42}.atomic-dimension-grid .correct{background:#eef8e6}.atomic-dimension-grid .correct span{color:#39722b}.atomic-dimension-grid .incorrect{background:#fff0eb}.atomic-dimension-grid .incorrect span{color:#9d4b39}
+.atomic-verdict{margin-top:8px;padding:10px;border-radius:11px;background:#edf1f5}.atomic-verdict span{display:block;color:#6f8196;font:850 .53rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase}.atomic-verdict strong{display:block;margin-top:6px;color:#293f5b;font:850 .7rem/1.35 "SFMono-Regular",Menlo,monospace}.atomic-verdict p{margin:5px 0 0;color:#687b91;font-size:.58rem;line-height:1.45}.atomic-verdict.correct{background:#e9f7df}.atomic-verdict.inspect{background:#fff3e8}
+
+/* Orbital rack */
+.atomic-rack{grid-area:rack;padding:18px;background:linear-gradient(160deg,#17233e,#11172f);color:#e8effc}
+.atomic-rack .atomic-panel-heading strong{color:#eff4ff}.atomic-rack .atomic-panel-heading span{color:#8fa2c0}
+.atomic-rack-scroll{overflow-x:auto;overscroll-behavior-inline:contain;padding-bottom:5px}
+.atomic-energy-rack{display:grid;grid-template-columns:45px 1fr;gap:9px;min-width:820px}
+.atomic-energy-axis{display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:7px 0;color:#7f94b4;font:750 .49rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase;writing-mode:vertical-rl}.atomic-energy-axis i{position:relative;flex:1;width:1px;margin:8px 0;background:linear-gradient(var(--atomic-amber),rgba(246,185,75,.08))}.atomic-energy-axis i:before{content:"";position:absolute;top:-2px;left:-4px;border-right:4px solid transparent;border-bottom:7px solid var(--atomic-amber);border-left:4px solid transparent}
+.atomic-rack-rows{display:grid;gap:6px}
+.atomic-subshell-row{position:relative;display:grid;grid-template-columns:75px minmax(0,1fr) 25px;gap:8px;align-items:center;min-height:74px;padding:7px 8px;border:1px solid rgba(142,165,200,.12);border-radius:12px;background:rgba(255,255,255,.035);transition:border-color .15s,background .15s}.atomic-subshell-row.active{border-color:rgba(79,215,229,.55);background:rgba(79,215,229,.075)}
+.atomic-subshell-label{display:grid;grid-template-columns:1fr auto;gap:3px;padding:7px;border:1px solid rgba(143,166,201,.15);border-radius:9px;color:#dbe6f9;background:#202e4c;text-align:left}.atomic-subshell-label strong{font:900 1.08rem/1 "Avenir Next Condensed","Arial Narrow",sans-serif}.atomic-subshell-label span{color:var(--atomic-electron);font:800 .52rem/1 "SFMono-Regular",Menlo,monospace}.atomic-subshell-label small{grid-column:1/-1;color:#8fa2c0;font-size:.47rem}.atomic-subshell-row.active .atomic-subshell-label{border-color:var(--atomic-cyan)}
+.atomic-orbital-sites{display:grid;grid-template-columns:repeat(var(--sites,5),minmax(95px,1fr));grid-auto-columns:minmax(95px,1fr);grid-auto-flow:column;gap:6px}
+.atomic-orbital-site{position:relative;display:grid;grid-template-columns:1fr;gap:4px;padding:5px;border:1px solid rgba(142,165,200,.13);border-radius:9px;background:#131d35}.atomic-orbital-site.allowed{border-color:rgba(169,227,107,.55)}.atomic-orbital-site.blocked{border-color:rgba(242,112,88,.7);background:#251b2d}
+.atomic-ml{color:#7f93b3;font:700 .46rem/1 "SFMono-Regular",Menlo,monospace;text-align:center}
+.atomic-orbital-box{display:flex;align-items:center;justify-content:center;gap:3px;min-height:38px;border:1px solid rgba(142,165,200,.22);border-bottom-width:3px;border-radius:6px 6px 3px 3px;background:#0c1428}.atomic-empty-orbital{color:#617594;font-size:.43rem;font-style:normal}
+.atomic-electron-wrap{position:relative;display:inline-grid;grid-template-columns:31px;grid-template-rows:34px}.atomic-electron{grid-area:1/1;display:grid;place-items:center;width:31px;height:34px;padding:0;border:1px solid rgba(169,227,107,.35);border-radius:6px;color:var(--atomic-electron);background:#1c3043;font:900 1.18rem/1 "SFMono-Regular",Menlo,monospace}.atomic-electron.down{color:var(--atomic-cyan)}.atomic-electron.selected{outline:2px solid var(--atomic-amber);outline-offset:2px}
+.atomic-remove-electron{position:absolute;z-index:2;top:-6px;right:-7px;display:grid;width:18px;height:18px;place-items:center;padding:0;border:0;border-radius:50%;color:#fff;background:#b44955;font-size:.65rem;font-weight:900;opacity:0;transition:opacity .15s}.atomic-electron-wrap:hover .atomic-remove-electron,.atomic-remove-electron:focus{opacity:1}
+.atomic-spin-actions{display:grid;grid-template-columns:1fr 1fr;gap:3px}.atomic-spin-actions button{min-height:25px;padding:3px;border:1px solid rgba(142,165,200,.17);border-radius:5px;color:#aebed5;background:#1e2a45;font:800 .48rem/1 "SFMono-Regular",Menlo,monospace}
+.atomic-site-reason{grid-column:1/-1;display:block;max-width:160px;padding:4px;color:#f2b8ad;font-size:.45rem;line-height:1.3}
+.atomic-energy-order{color:#4d6282;font:800 .6rem/1 "SFMono-Regular",Menlo,monospace;font-style:normal;text-align:center}
+.atomic-rack-ledger{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(142,165,200,.14);color:#9eb0ca;font-size:.58rem}.atomic-rack-ledger span{display:flex;align-items:center;gap:5px}.atomic-rack-ledger i{position:static;width:7px;height:7px}.atomic-rack-ledger .electron-dot{background:var(--atomic-electron)}.atomic-rack-ledger .unpaired-dot{display:inline-block;border-radius:50%;background:var(--atomic-cyan)}.atomic-rack-ledger strong{margin-left:auto;color:#e9f0fc;font:800 .65rem/1.35 "SFMono-Regular",Menlo,monospace}
+
+/* Quantum address */
+.atomic-quantum{grid-area:quantum;padding:18px;background:linear-gradient(155deg,#fbfaff,#f1efff)}
+.atomic-selected-electron{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #d9d2ff;border-radius:11px;background:#fff}.atomic-selected-electron>i{display:grid;width:42px;height:42px;place-items:center;border-radius:10px;color:#fff;background:var(--atomic-violet);font:900 1.35rem/1 "SFMono-Regular",Menlo,monospace;font-style:normal}.atomic-selected-electron span b,.atomic-selected-electron span{display:block}.atomic-selected-electron span{color:#5f718b;font:750 .61rem/1.4 "SFMono-Regular",Menlo,monospace}.atomic-selected-electron span b{color:#263e5c;font-family:Inter,system-ui,sans-serif;font-size:.68rem}
+.atomic-quantum-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.atomic-quantum-controls label{display:grid;grid-template-columns:auto 1fr;gap:4px 7px;align-items:center;padding:8px;border:1px solid #ddd8f4;border-radius:10px;background:#fff}.atomic-quantum-controls label>span{display:grid;width:28px;height:28px;place-items:center;border-radius:7px;color:#fff;background:#283d5b;font:850 .67rem/1 "SFMono-Regular",Menlo,monospace}.atomic-quantum-controls select{min-width:0;width:100%;padding:7px;border:1px solid #d4d9e2;border-radius:7px;color:#283e5c;background:#f8fafc;font:800 .65rem/1 "SFMono-Regular",Menlo,monospace}.atomic-quantum-controls small{grid-column:1/-1;color:#8491a5;font-size:.5rem;text-align:right}
+.atomic-quantum-check{width:100%;min-height:42px;margin-top:8px;border:0;border-radius:9px;color:#fff;background:var(--atomic-violet);font-size:.63rem;font-weight:850}
+.atomic-quantum-verdict{margin-top:8px;padding:9px;border-radius:10px;background:#fff}.atomic-quantum-verdict>span{display:block;margin-bottom:6px;color:#5d7089;font:850 .53rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase}.atomic-quantum-verdict p{display:grid;grid-template-columns:28px 1fr;gap:6px;margin:4px 0;padding:5px;border-radius:7px;color:#6d7e93;font-size:.52rem;line-height:1.35}.atomic-quantum-verdict p b{font:850 .55rem/1 "SFMono-Regular",Menlo,monospace}.atomic-quantum-verdict p.correct{background:#eef8e6}.atomic-quantum-verdict p.incorrect{background:#fff0eb}
+.atomic-quantum-empty{display:grid;place-items:center;min-height:220px;padding:18px;border:1px dashed #cbc4ef;border-radius:13px;text-align:center;background:rgba(255,255,255,.56)}.atomic-quantum-empty>div{display:flex;gap:8px}.atomic-quantum-empty i{display:grid;width:40px;height:48px;place-items:center;border-radius:9px;color:var(--atomic-violet);background:#fff;font:900 1.35rem/1 "SFMono-Regular",Menlo,monospace;font-style:normal;box-shadow:0 7px 16px rgba(66,50,142,.10)}.atomic-quantum-empty strong{margin-top:10px;color:#314764;font-size:.76rem}.atomic-quantum-empty p{max-width:270px;margin:6px 0 0;color:#72829a;font-size:.59rem;line-height:1.5}
+.atomic-quantum-note{margin:9px 0 0;color:#76869b;font:700 .54rem/1.5 "SFMono-Regular",Menlo,monospace}
+
+/* Ionization terrain */
+.atomic-terrain{grid-area:terrain;padding:18px;background:linear-gradient(145deg,#fff,#f4f7fa)}
+.atomic-terrain-layout{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:13px}
+.atomic-terrain-chart{min-width:0;overflow-x:auto;border:1px solid #dce4eb;border-radius:14px;background:#f9fbfd}.atomic-terrain-chart svg{display:block;min-width:690px;width:100%;height:auto}
+.period-band{fill:#edf3f7}.period-band.alt{fill:#f5f7fa}.terrain-gridline line{stroke:#9eb0c3;stroke-width:1;stroke-opacity:.25;stroke-dasharray:3 6}.terrain-gridline text,.terrain-axis-title{fill:#75869b;font:700 9px/1 "SFMono-Regular",Menlo,monospace}.terrain-line{fill:none;stroke:#445b7b;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.terrain-point circle{fill:var(--block);stroke:#fff;stroke-width:2}.terrain-point.block-s{--block:var(--atomic-violet)}.terrain-point.block-p{--block:var(--atomic-cyan)}.terrain-point.block-d{--block:var(--atomic-amber)}.terrain-point.selected circle{stroke:#172642;stroke-width:3;filter:drop-shadow(0 3px 5px rgba(20,38,66,.25))}
+.terrain-annotation path{fill:none;stroke:#d1772d;stroke-width:1.4;stroke-dasharray:4 4}.terrain-annotation text{fill:#8d5d24;font:800 8px/1 "SFMono-Regular",Menlo,monospace}
+.atomic-comparator{padding:13px;border-radius:14px;color:#dce8fa;background:var(--atomic-vacuum)}.atomic-comparator>span{display:block;color:#8fa3c3;font:850 .54rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase}.atomic-comparator>div:first-of-type{display:grid;gap:7px;margin-top:11px}.atomic-comparator label small{display:block;margin-bottom:4px;color:#8fa2bf;font-size:.51rem}.atomic-comparator select{width:100%;padding:8px;border:1px solid #384b6b;border-radius:8px;color:#ecf3ff;background:#202d49;font:750 .59rem/1 "SFMono-Regular",Menlo,monospace}.atomic-comparator>div>b{color:#617797;font:750 .49rem/1 "SFMono-Regular",Menlo,monospace;text-align:center;text-transform:uppercase}.atomic-comparator>button{width:100%;min-height:40px;margin-top:9px;border:0;border-radius:8px;color:#172642;background:var(--atomic-amber);font-size:.6rem;font-weight:850}
+.atomic-comparison-result{margin-top:9px;padding:10px;border:1px solid rgba(149,171,204,.15);border-radius:10px;background:rgba(255,255,255,.045)}.atomic-comparison-result strong,.atomic-comparison-result span{display:block}.atomic-comparison-result strong{color:#fff;font-size:.72rem}.atomic-comparison-result span{margin-top:5px;color:#c3d0e3;font-size:.57rem;line-height:1.4}.atomic-comparison-result p{margin:7px 0 0;color:#8498b8;font-size:.51rem;line-height:1.45}
+
+/* Trace */
+.atomic-trace{grid-area:trace;padding:18px;background:linear-gradient(155deg,#fff,#f4f7fb)}
+.atomic-trace-list{display:grid;gap:6px;max-height:440px;overflow:auto;padding-right:2px}.atomic-trace-list article{position:relative;display:grid;grid-template-columns:8px 1fr;gap:4px 7px;padding:8px 9px;border:1px solid #e1e6ec;border-radius:9px;background:#fff}.atomic-trace-list article>i{grid-row:1/4;width:7px;height:7px;margin-top:2px;border-radius:50%;background:#8697ab}.atomic-trace-list article>span{color:#8492a4;font:850 .47rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase}.atomic-trace-list article>strong{color:#334963;font-size:.61rem}.atomic-trace-list article>p{margin:0;color:#73849a;font-size:.53rem;line-height:1.4}.atomic-trace-list article.blocked>i{background:#df6c56}.atomic-trace-list article.correct>i{background:#6db34c}.atomic-trace-list article.placed>i{background:var(--atomic-electron)}.atomic-trace-list article.compare>i{background:var(--atomic-amber)}.atomic-trace-list article.reveal>i{background:var(--atomic-violet)}
+.atomic-teacher-lens{margin-top:9px;border:1px solid #d9e1e9;border-radius:10px;background:#fff}.atomic-teacher-lens summary{display:flex;justify-content:space-between;gap:8px;padding:10px;color:#3d536e;font-size:.62rem;font-weight:850;cursor:pointer}.atomic-teacher-lens summary span{color:var(--atomic-violet)}.atomic-teacher-lens[open] summary span{transform:rotate(45deg)}.atomic-teacher-lens ol{margin:0;padding:0 14px 12px 29px}.atomic-teacher-lens li{margin-top:7px;color:#6b7c91;font-size:.55rem;line-height:1.45}
+
+/* Passport */
+.atomic-passport{grid-area:passport;display:grid;grid-template-columns:.8fr 1.2fr .85fr;gap:16px 20px;padding:19px;background:linear-gradient(145deg,#fff,#f3f6f8)}
+.atomic-passport-intro p{margin:9px 0 0;color:#6e7f94;font-size:.61rem;line-height:1.53}.atomic-passport-verdict{display:flex;align-items:center;gap:7px;padding:10px;border-radius:10px;color:#2d645b;background:#eaf7ee;font:850 .54rem/1.4 "SFMono-Regular",Menlo,monospace;text-transform:uppercase}.atomic-passport-verdict i{width:7px;height:7px;border-radius:50%;background:#63a948}
+.atomic-passport-groups{display:grid;grid-template-columns:1fr 1fr;gap:9px}.atomic-passport-groups>div{display:flex;align-content:flex-start;gap:5px;flex-wrap:wrap}.atomic-passport-groups span,.atomic-rules>span,.atomic-sources>span{flex-basis:100%;display:block;margin-bottom:4px;color:#718299;font:850 .52rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase;letter-spacing:.08em}.atomic-passport-groups b{padding:5px 6px;border-radius:7px;color:#306b52;background:#eaf6ec;font-size:.5rem;line-height:1.25}.atomic-passport-groups .excluded b{color:#81564f;background:#f7ece9}
+.atomic-rules{grid-column:1/3;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.atomic-rules>span,.atomic-rules>p{grid-column:1/-1}.atomic-rules code{padding:8px;border-radius:8px;color:var(--atomic-electron);background:var(--atomic-vacuum);font:750 .55rem/1.35 "SFMono-Regular",Menlo,monospace;text-align:center}.atomic-rules p{margin:3px 0 0;color:#708198;font-size:.59rem;line-height:1.5}
+.atomic-sources{grid-column:3;grid-row:1/3;display:grid;align-content:start;gap:6px;max-height:470px;overflow:auto}.atomic-sources a{display:grid;grid-template-columns:1fr auto;gap:3px 8px;padding:8px;border:1px solid #dfe5eb;border-radius:9px;color:#29425f;background:#fff;text-decoration:none}.atomic-sources a strong,.atomic-sources a small{display:block}.atomic-sources a strong{font-size:.59rem}.atomic-sources a small{color:#7b8b9e;font-size:.51rem;line-height:1.35}.atomic-sources a>b{grid-column:2;grid-row:1/3;align-self:center;color:var(--atomic-violet)}
+
+.atomic-lab button,.atomic-lab input,.atomic-lab select,.atomic-lab a{outline:none}
+.atomic-lab button:focus-visible,.atomic-lab input:focus-visible,.atomic-lab select:focus-visible,.atomic-lab a:focus-visible,.atomic-teacher-lens summary:focus-visible{
+  outline:3px solid rgba(79,215,229,.55);
+  outline-offset:3px;
+}
+
+@media(max-width:1320px){
+  .atomic-bench{
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:
+      "periodic periodic"
+      "target theatre"
+      "prediction prediction"
+      "rack rack"
+      "quantum trace"
+      "terrain terrain"
+      "passport passport";
+  }
+  .atomic-prediction{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.atomic-prediction .atomic-panel-heading,.atomic-prediction .atomic-dimension-grid,.atomic-prediction .atomic-verdict{grid-column:1/-1}.atomic-hint{grid-column:2}.atomic-dimension-grid{grid-template-columns:repeat(4,1fr)}
+  .atomic-passport{display:block}.atomic-passport>*+*{margin-top:15px}.atomic-rules{display:grid}.atomic-sources{max-height:none}
+}
+@media(max-width:950px){
+  .atomic-header{align-items:flex-start;flex-direction:column}.atomic-condition-stamp{width:100%}
+  .atomic-bench{
+    grid-template-columns:1fr;
+    grid-template-areas:"periodic" "target" "theatre" "prediction" "rack" "quantum" "terrain" "trace" "passport";
+    padding:9px;
+  }
+  .atomic-target{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}.atomic-target .atomic-panel-heading,.atomic-target .atomic-start-actions,.atomic-target .atomic-action-boundary,.atomic-target .atomic-exception{grid-column:1/-1}
+  .atomic-terrain-layout{grid-template-columns:1fr}.atomic-comparator{display:grid;grid-template-columns:1fr auto 1.2fr;gap:10px;align-items:start}.atomic-comparator>span{grid-column:1/-1}.atomic-comparator>div:first-of-type{margin:0}.atomic-comparator>button{margin:0;align-self:stretch}.atomic-comparison-result{margin:0}
+  .atomic-trace-list{grid-template-columns:1fr 1fr;max-height:none}.atomic-teacher-lens{grid-column:1/-1}
+}
+@media(max-width:760px){
+  .atomic-lab{margin-top:42px;padding:0 10px 70px}.atomic-lab:before{border-radius:28px}
+  .atomic-header h2{font-size:clamp(3.1rem,15vw,4.6rem)}.atomic-header>div:first-child>p:last-child{font-size:.78rem}.atomic-condition-stamp{min-width:0}
+  .atomic-periodic,.atomic-target,.atomic-prediction,.atomic-rack,.atomic-quantum,.atomic-terrain,.atomic-trace,.atomic-passport{padding:14px}
+  .atomic-table-cue,.atomic-rack-cue{position:sticky;z-index:4;left:0;display:flex;width:max-content;min-height:32px;align-items:center;gap:8px;margin:0 0 8px;padding:6px 9px;border:1px solid #d8dff0;border-radius:8px;color:#62758d;background:#fff;font:850 .53rem/1 "SFMono-Regular",Menlo,monospace;text-transform:uppercase;letter-spacing:.06em}.atomic-table-cue b,.atomic-rack-cue b{color:var(--atomic-violet);font-size:.8rem}
+  .atomic-table-scroll,.atomic-rack-scroll,.atomic-terrain-chart{scrollbar-width:thin}
+  .atomic-periodic-grid{grid-template-columns:repeat(18,50px);min-width:985px}
+  .atomic-target{display:block}.atomic-target>*+*{margin-top:10px}.atomic-target .atomic-panel-heading{margin-top:0}
+  .atomic-cloud-topline{align-items:flex-start;flex-direction:column}.atomic-cloud svg{min-height:350px}.atomic-cloud-stats{grid-template-columns:1fr 1fr}.atomic-cloud-tabs{grid-template-columns:repeat(4,1fr)}
+  .atomic-prediction{display:block}.atomic-prediction>*+*{margin-top:9px}.atomic-prediction .atomic-panel-heading{margin-top:0}.atomic-dimension-grid{grid-template-columns:1fr 1fr}
+  .atomic-energy-rack{min-width:900px}.atomic-rack-cue{border-color:rgba(142,165,200,.25);color:#b9c7db;background:#202d49}.atomic-rack-cue b{color:var(--atomic-cyan)}
+  .atomic-orbital-sites{grid-template-columns:repeat(5,minmax(112px,1fr))}
+  .atomic-spin-actions button,.atomic-electron,.atomic-remove-electron,.atomic-subshell-label,.atomic-cloud-tabs button,.atomic-start-actions button,.atomic-magnetism-choice button,.atomic-check-actions button,.atomic-quantum-check,.atomic-comparator>button{min-height:44px}
+  .atomic-electron-wrap{grid-template-columns:44px;grid-template-rows:44px 44px}
+  .atomic-electron{width:44px;height:44px}
+  .atomic-remove-electron{position:static;grid-row:2;width:44px;height:44px;min-height:44px;border-radius:7px;opacity:1}
+  .atomic-orbital-box{min-height:96px}
+  .atomic-unpaired-input input,.atomic-quantum-controls select,.atomic-comparator select{min-height:44px}
+  .atomic-terrain-layout{display:block}.atomic-comparator{display:block;margin-top:10px}.atomic-comparator>*+*{margin-top:9px!important}
+  .atomic-trace-list{grid-template-columns:1fr}
+  .atomic-passport-groups{grid-template-columns:1fr}.atomic-rules{grid-template-columns:1fr 1fr}.atomic-rules>span,.atomic-rules>p{grid-column:1/-1}.atomic-sources a,.atomic-teacher-lens summary{min-height:44px}
+}
+@media(max-width:430px){
+  .atomic-header h2{font-size:3.15rem}
+  .atomic-bench{border-radius:24px}
+  .atomic-element-identity{grid-template-columns:42px 58px 1fr}.atomic-element-identity>strong{font-size:2.5rem}
+  .atomic-start-actions,.atomic-magnetism-choice,.atomic-check-actions,.atomic-dimension-grid,.atomic-quantum-controls{grid-template-columns:1fr}
+  .atomic-start-actions .reference{grid-column:auto}
+  .atomic-cloud-stats{grid-template-columns:1fr 1fr}.atomic-cloud-tabs{grid-template-columns:repeat(4,1fr)}
+  .atomic-rules{grid-template-columns:1fr}
+  .atomic-rules>span,.atomic-rules>p{grid-column:auto}
+  .atomic-passport-groups{display:block}.atomic-passport-groups>div+div{margin-top:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .atomic-scan{animation:none}
+  .atomic-element,.atomic-remove-electron{transition:none}
+}

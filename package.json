@@ -1,0 +1,53 @@
+{
+  "name": "chemlab-studio",
+  "private": true,
+  "version": "2.0.0",
+  "description": "An open, visual university chemistry workbench for manual molecular experiments and explainable rule-based learning.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "verify:equilibrium": "node scripts/verify-equilibrium.mjs",
+    "verify:thermokinetics": "node scripts/verify-thermokinetics.mjs",
+    "verify:thermochemistry": "node scripts/verify-thermochemistry.mjs",
+    "verify:solubility-equilibrium": "node scripts/verify-solubility-equilibrium.mjs",
+    "verify:nuclear-chemistry": "node scripts/verify-nuclear-chemistry.mjs",
+    "verify:infrared-evidence": "node scripts/verify-infrared-evidence.mjs",
+    "verify:orthogonal-evidence": "node scripts/verify-orthogonal-evidence.mjs",
+    "verify:measured-ei-evidence": "node scripts/verify-measured-ei-evidence.mjs",
+    "verify:spectrophotometry": "node scripts/verify-spectrophotometry.mjs",
+    "verify:enzyme-kinetics": "node scripts/verify-enzyme-kinetics.mjs",
+    "verify:electron-flow": "node scripts/verify-electron-flow.mjs",
+    "verify:crystal-lattice": "node scripts/verify-crystal-lattice.mjs",
+    "verify:polymer-population": "node scripts/verify-polymer-population.mjs",
+    "verify:coordination-field": "node scripts/verify-coordination-field.mjs",
+    "verify:gas-phases": "node scripts/verify-gas-phases.mjs",
+    "verify:binary-vle": "node scripts/verify-binary-vle.mjs",
+    "verify:nonideal-thermodynamics": "node scripts/verify-nonideal-thermodynamics.mjs",
+    "verify:peptides": "node scripts/verify-peptide-chemistry.mjs",
+    "verify:nucleic-acids": "node scripts/verify-nucleic-acids.mjs",
+    "verify:electrochemistry": "node scripts/verify-electrochemistry.mjs",
+    "verify:stoichiometry": "node scripts/verify-stoichiometry.mjs",
+    "verify:atomic-structure": "node scripts/verify-atomic-structure.mjs",
+    "verify:molecular-geometry": "node scripts/verify-molecular-geometry.mjs",
+    "verify:molecular-orbitals": "node scripts/verify-molecular-orbitals.mjs",
+    "verify:stereochemistry": "node scripts/verify-stereochemistry.mjs",
+    "verify:stereochemical-reactions": "node scripts/verify-stereochemical-reactions.mjs",
+    "verify:intermolecular": "node scripts/verify-intermolecular.mjs",
+    "verify:chemical-equilibrium": "node scripts/verify-chemical-equilibrium.mjs",
+    "verify:measurement-uncertainty": "node scripts/verify-measurement-uncertainty.mjs",
+    "verify:chromatography": "node scripts/verify-chromatography.mjs",
+    "verify:functional-groups": "node scripts/verify-functional-groups.mjs",
+    "verify:electronic-bands": "node scripts/verify-electronic-bands.mjs"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.0",
+    "vite": "8.2.2"
+  }
+}
