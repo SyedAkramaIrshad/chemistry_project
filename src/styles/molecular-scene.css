@@ -1,4 +1,8 @@
 /* Three renders the material; projected DOM controls keep every atom keyboard accessible. */
+.molecule-playground .atom-cluster.discovery-hint .valence-ring { border-color: #7de2ef; box-shadow: 0 0 0 4px #7de2ef2b; }
+.molecule-playground .atom-cluster.discovery-group .valence-ring { border-color: #ffd789; box-shadow: 0 0 0 5px #ffd7892b; }
+.molecule-playground .bond-visible.discovery-hint:not(.selected) { stroke: #7de2ef; }
+.molecule-playground .bond-visible.discovery-group:not(.selected) { stroke: #ffd789; }
 .molecule-playground #sceneLayer { position: absolute; inset: 0; z-index: 2; overflow: hidden; pointer-events: none; }
 .molecule-playground #workspace.scene-ready #sceneLayer { pointer-events: auto; }
 .molecule-playground #workspace.scene-ready #atomLayer,
@@ -6,7 +10,7 @@
 .scene-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
 .scene-label-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .scene-atom-label { position: absolute; width: var(--scene-diameter,64px); height: var(--scene-diameter,64px); pointer-events: none; }
-.scene-atom-label[hidden], .scene-socket[hidden], .scene-charge[hidden], .scene-bond-button[hidden] { display: none !important; }
+.scene-atom-label[hidden], .scene-socket[hidden], .scene-charge[hidden], .scene-bond-button[hidden], .scene-bond-capacity[hidden], .scene-functional-group-tag[hidden] { display: none !important; }
 .scene-atom-button { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0; transform: translate(-50%,-50%); border: 2px solid transparent; border-radius: 50%; color: #fff; background: transparent; user-select: none; cursor: grab; }
 .scene-atom-button:hover { background: #ffffff0a; }
 .scene-atom-button:active { cursor: grabbing; }
@@ -54,3 +58,12 @@
 .scene-atom-label.is-incompatible .scene-symbol { opacity: .84; }
 .scene-atom-label.is-incompatible .scene-atom-button:hover { border-color: #e7a4b47d; background: #ffacb512; }
 .molecule-playground .scene-atom-label:is(.is-compatible,.is-incompatible) .scene-atom-button:focus-visible { opacity: 1; outline-color: #b2f8f1; }
+
+/* Learning annotations describe the graph; they never become editing targets. */
+.scene-bond-capacity { position: absolute; z-index: 2; top: calc(100% + 16px); left: 50%; display: block; width: max-content; max-width: 158px; padding: 5px 8px; transform: translateX(-50%); border: 1px solid #446975; border-radius: 7px; color: #c8eee9; background: #102c35ed; box-shadow: 0 3px 12px #00141e55; font: 500 10px/1.3 "Avenir Next",system-ui,sans-serif; white-space: nowrap; pointer-events: none; }
+.scene-functional-group-tag { position: absolute; z-index: 2; top: 0; left: 0; display: flex; align-items: center; justify-content: center; height: 28px; padding: 4px 9px; border: 1px solid #b392536b; border-radius: 8px; color: #f5d694; background: #2e2b20ee; box-shadow: 0 3px 14px #081a2355; font: 550 10px/1.25 "Avenir Next",system-ui,sans-serif; letter-spacing: .005em; white-space: nowrap; pointer-events: none; }
+.scene-functional-group-tag::before { content: ""; flex: 0 0 5px; width: 5px; height: 5px; margin-right: 6px; border-radius: 50%; background: #f1ce88; box-shadow: 0 0 7px #e1be7055; }
+.scene-bond-button.learning-group:not(.is-selected) { border-color: #edc98452; background: #f4c97b0b; }
+.scene-bond-button.learning-group:not(.is-selected):hover { border-color: #edc984a3; background: #f4c97b1a; }
+.scene-bond-button.learning-hint:not(.is-selected,.learning-group) { border-color: #7dddeda3; background: #79d8e51a; }
+.scene-bond-button.learning-hint:not(.is-selected,.learning-group):hover { border-color: #9aebf6; background: #79d8e52b; }
