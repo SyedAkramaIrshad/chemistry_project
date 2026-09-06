@@ -2,6 +2,10 @@
 
 **A visual chemistry playground where learners build molecules by hand, test bonds, and learn from every accepted or rejected move.**
 
+**[Open the live playground](https://syed-chemistry-playground.syedakramairshadpers.chatgpt.site)** — public and ready to use in your browser. No installation required.
+
+Try making water: choose **Water → Start fresh**, keep **Attach to selected atom** checked, then click **O → H → H**. The atoms connect into **H₂O**. You can also turn Attach off, place loose atoms, and drag each hydrogen onto oxygen.
+
 ![ChemLab Studio molecular playground](docs/preview-desktop.png)
 
 ChemLab Studio turns molecular structure into a direct-manipulation learning experience. Drag atoms onto the construction table, connect visible bonding sites, break or rebuild bonds, and inspect how the structure changes.
