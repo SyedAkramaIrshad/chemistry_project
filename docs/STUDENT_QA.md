@@ -12,7 +12,8 @@ The playground is a teaching model for explicitly chosen atoms, bonds, and charg
 - Playground delete/undo shortcuts are inactive while another lab or a modal is open. Unsupported Shift+Ctrl/Cmd+Z does not accidentally undo.
 - Keyboard users can activate 2D sockets, keep focus across diagram and inspector updates, identify the chosen bond tool, and enter/leave dialogs.
 - Interrupted 2D drags restore the original positions. Bond gestures track their initiating pointer and ignore a second finger.
-- A hint button selects the suggested atom without changing the molecule.
+- A hint button selects the suggested atom without changing the molecule, including the correct carbon when the ethanol skeleton still needs oxygen.
+- The 2D drawing fits its atoms inside the canvas when the screen becomes narrower, preserving connectivity.
 - Essential building controls use larger text, wrap on narrow screens, follow their visual reading order, and allow native zoom over the scene.
 - Draft parsing, history size, and atom counts are bounded. The canvas currently supports up to 160 explicitly placed atoms.
 
@@ -40,10 +41,10 @@ BASE_URL=http://127.0.0.1:5173 STUDENT_BROWSER=firefox npm run verify:student-br
 
 ## Verification record
 
-Production build, pure storage checks, existing discovery checks, and all 24,793 deterministic chemistry probes pass. Browser CI results are pending for this revision.
+Production build, pure storage checks, existing discovery checks, and all 24,793 deterministic chemistry probes pass. Browser results and screenshots are recorded in [PR #4 checks](https://github.com/SyedAkramaIrshad/chemistry_project/pull/4/checks). Use the results for the latest revision; a passing older run does not verify a later code change.
 
 ## Release limits
 
-These automated checks cover selected workflows; they do not establish learning gains, complete accessibility conformance, or real-device performance. WebKit on Linux is not a physical iPhone or Safari installation. Phone tests use a 390px touch-enabled context; reflow covers 320, 390, and 742px, with an additional 200% CSS zoom check. Multi-pointer cancellation is tested with synthetic pointer events.
+These automated checks cover selected workflows; they do not establish learning gains, complete accessibility conformance, or real-device performance. WebKit on Linux is not a physical iPhone or Safari installation. Phone tests use a 390px touch-enabled context; reflow covers 320, 390, 640, and 742px. The 640px layout approximates the effective CSS viewport of a 1280px window at 200% page zoom; native browser zoom itself is not automated. Multi-pointer cancellation is tested with synthetic pointer events.
 
 Interactive cloud preview inspection was blocked by the environment's browser security policy during this pass. The independent browser tests run in GitHub Actions. Before adopting this across a class, run a supervised student pilot on the actual school devices, including keyboard/screen-reader users, and observe whether learners can build water and ethanol without assistance, recover from a wrong bond, and explain why ethanol and dimethyl ether differ.

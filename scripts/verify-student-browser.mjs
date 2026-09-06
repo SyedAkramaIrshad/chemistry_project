@@ -84,12 +84,12 @@ try {
     await water(); const own=await graph(); await page.locator('#saveStructureBtn').click();
     await page.locator('#clearBtn').click();
     await page.locator('.saved-panel summary').click(); await page.locator('#savedList').getByRole('button',{name:'Load',exact:true}).first().click();
-    assert.equal(await identity(),'H2O'); assert.deepEqual((await graph()).atoms.map(a=>a.symbol),own.atoms.map(a=>a.symbol)); assert.equal((await graph()).bonds.length,own.bonds.length); assert.doesNotMatch(await page.locator('#discoveryCard').innerText(),/Reference structure/);
+    assert.equal(await identity(),'H2O'); assert.deepEqual((await graph()).atoms.map(a=>a.symbol),own.atoms.map(a=>a.symbol)); assert.equal((await graph()).bonds.length,own.bonds.length); assert.doesNotMatch(await page.locator('#discoveryCard').innerText(),/Reference structure/i);
     await page.locator('#clearBtn').click(); await page.locator('#discoveryReferenceBtn').click(); assert.equal(await identity(),'H2O');
-    assert.match(await page.locator('#discoveryCard').innerText(),/Reference structure/);
+    assert.match(await page.locator('#discoveryCard').innerText(),/Reference structure/i);
     await page.locator('#undoBtn').click(); assert.equal((await graph()).atoms.length,0);
     await page.locator('#discoveryReferenceBtn').click(); await page.reload(); await ready();
-    assert.match(await page.locator('#discoveryCard').innerText(),/Reference structure/);
+    assert.match(await page.locator('#discoveryCard').innerText(),/Reference structure/i);
   });
   await check('hidden playground and unsupported Redo do not edit molecules',async()=>{
     await water(); const before=await graph();
@@ -143,14 +143,16 @@ try {
     await page.mouse.move(box.x+100,box.y+70,{steps:5}); await page.keyboard.press('Escape'); await page.mouse.up();
     assert.deepEqual(await graph(),before); await page.locator('#undoBtn').click(); assert.equal((await graph()).atoms.length,2);
   });
-  await check('Tab reaches building controls; mobile reflow and enlarged text fit',async()=>{
+  await check('Tab reaches building controls; narrow and zoom-equivalent layouts fit',async()=>{
     await page.locator('#discoveryGoalSelect').focus(); let found=false;
     for(let i=0;i<30;i++){await page.keyboard.press('Tab');if(await page.evaluate(()=>document.activeElement?.hasAttribute('data-build-element'))){found=true;break;}}
     assert.ok(found,'Quick atom controls must be in the real Tab sequence.');
-    for(const width of [742,390,320]){await page.setViewportSize({width,height:900});await fits(width);await page.waitForFunction(()=>{const w=document.querySelector('#workspace');return [...document.querySelectorAll('#atomLayer .atom-cluster')].every(n=>{const x=parseFloat(n.style.left),y=parseFloat(n.style.top);return x>=57&&x<=w.clientWidth-57&&y>=57&&y<=w.clientHeight-57;});});}
-    await page.setViewportSize({width:1280,height:1000});
-    await page.evaluate(()=>document.documentElement.style.zoom='2'); await fits('200% CSS zoom');
-    await page.screenshot({path:resolve(screenshots,'2d-zoom.png'),fullPage:true});
+    for(const width of [742,640,390,320]){await page.setViewportSize({width,height:900});await fits(width);await page.waitForFunction(()=>{const w=document.querySelector('#workspace');return [...document.querySelectorAll('#atomLayer .atom-cluster')].every(n=>{const x=parseFloat(n.style.left),y=parseFloat(n.style.top);return x>=57&&x<=w.clientWidth-57&&y>=57&&y<=w.clientHeight-57;});});}
+    // A 1280px window at 200% page zoom has a 640px effective layout viewport.
+    // CSS zoom on the root does not exercise viewport media queries and is not
+    // a faithful browser-zoom simulation. Native browser chrome is not tested.
+    await page.setViewportSize({width:640,height:1000}); await fits('640px effective zoom viewport');
+    await page.screenshot({path:resolve(screenshots,'2d-640-reflow.png'),fullPage:true});
   });
   await context.close();
 

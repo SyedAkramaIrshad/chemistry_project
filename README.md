@@ -6,6 +6,8 @@
 
 Try making water: choose **Water → Start fresh**, keep **Attach to selected atom** checked, then click **O → H → H**. The atoms connect into **H₂O**. You can also turn Attach off, place loose atoms, and drag each hydrogen onto oxygen.
 
+Work is recovered when you refresh the same browser tab. Use **Save locally** or **Export MOL** before closing your work. See the [student QA coverage and release limits](docs/STUDENT_QA.md) for tested workflows and the remaining classroom pilot checks.
+
 ![ChemLab Studio molecular playground](docs/preview-desktop.png)
 
 ChemLab Studio turns molecular structure into a direct-manipulation learning experience. Drag atoms onto the construction table, connect visible bonding sites, break or rebuild bonds, and inspect how the structure changes.
@@ -178,3 +180,4 @@ The six discovery goals link to their formula/structure reference records in the
 ## License
 
 Released under the [MIT License](LICENSE).
+
