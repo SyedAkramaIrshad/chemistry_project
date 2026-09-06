@@ -1,0 +1,47 @@
+name: Molecular playground
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'codex/**'
+
+permissions:
+  contents: read
+
+jobs:
+  playground:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Start playground
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 5173 > /tmp/playground-vite.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:5173; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/playground-vite.log
+          exit 1
+      - name: Verify molecular interactions and layouts
+        run: npm run verify:playground
+        env:
+          BASE_URL: http://127.0.0.1:5173
+      - name: Upload playground screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-screenshots
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -25,14 +25,24 @@ An allowed graph edit is not automatically a stable molecule or evidence that a 
 ## What learners can do
 
 - Drag, place, move, select, and remove atoms.
+- Explore a glossy 3D workbench with visible element symbols, atomic numbers, and formal charges.
 - Create single, double, triple, and supported ionic interactions.
 - Select and break bonds without deleting either atom.
+- Watch bonds grow or retract, with brief visual separation when a break disconnects fragments.
 - Reconnect atoms using a learner-selected bond mode.
 - See available bonding sites and simplified valence electrons.
 - Inspect formula, molar mass, charge, connectivity, and structure state live.
 - Receive a specific chemical explanation when an attempted edit is rejected.
 - Keep the attempted structure unchanged when an action is not permitted.
 - Load starting structures, save structures in the browser, and export MOL files.
+
+### Playing in 3D
+
+Drag an atom to move it. Select an atom to see its name, atomic mass, neutral-atom electron configuration (H–Kr reference set), and current Lewis-state properties. Use its **+** socket or **Start bond** in the inspector, then select a target atom. Select a bond and choose **Break bond**, or press Delete. Every attempted connection is checked by the existing chemistry engine.
+
+Choose **Rotate** to turn the view, scroll over the stage to zoom, and use **Reset view** to fit the structure. These camera actions do not change molecular coordinates. Keyboard users can Tab to atoms and bonds, press Enter to select, **B** on an atom to begin a connection, and use arrow keys to move an atom (Shift moves farther). Undo restores the previous graph edit.
+
+The **2D view** remains fully editable and is used automatically if WebGL cannot start or its context is lost. Motion respects the system's reduced-motion preference. The 3D drawing and bond animations are schematic feedback, not optimized molecular geometry or a molecular dynamics simulation.
 
 ## Why it is different
 
@@ -70,6 +80,17 @@ Create a production build with:
 npm run build
 ```
 
+Run the focused browser verification against the local development server:
+
+```bash
+npx playwright install chromium
+npm run dev -- --host 127.0.0.1 --port 5173
+# In another terminal:
+npm run verify:playground
+```
+
+This checks atom properties, conservation during bond edits, blocked connections, exact undo, bond-order changes, dragging, camera isolation, responsive layouts, and the 2D fallback. It writes screenshots to `test-results/`. The Molecular playground GitHub Actions workflow runs the same checks on pull requests.
+
 ## Other learning workspaces
 
 The navigation also exposes focused workspaces for atomic structure, molecular geometry, molecular orbitals, stoichiometry, equilibrium, spectroscopy, thermochemistry, electrochemistry, and other university-chemistry topics.
@@ -93,7 +114,10 @@ Key playground files:
 - [`src/components/LabWorkspace.jsx`](src/components/LabWorkspace.jsx) — molecular construction interface
 - [`src/components/ExperimentGuide.jsx`](src/components/ExperimentGuide.jsx) — H₂O + N guided challenge
 - [`src/chemistry/controller.js`](src/chemistry/controller.js) — graph edits and rejection behavior
+- [`src/graphics/MoleculeScene.js`](src/graphics/MoleculeScene.js) — disposable 3D presentation and accessible scene controls
+- [`src/graphics/sceneMath.js`](src/graphics/sceneMath.js) — camera bounds and visual fragment feedback
 - [`src/styles/molecular-playground.css`](src/styles/molecular-playground.css) — playground presentation
+- [`src/styles/molecular-scene.css`](src/styles/molecular-scene.css) — projected atom labels and scene controls
 
 ## Scientific boundary
 

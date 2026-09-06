@@ -40,14 +40,17 @@
     "verify:measurement-uncertainty": "node scripts/verify-measurement-uncertainty.mjs",
     "verify:chromatography": "node scripts/verify-chromatography.mjs",
     "verify:functional-groups": "node scripts/verify-functional-groups.mjs",
-    "verify:electronic-bands": "node scripts/verify-electronic-bands.mjs"
+    "verify:electronic-bands": "node scripts/verify-electronic-bands.mjs",
+    "verify:playground": "node scripts/verify-playground.mjs"
   },
   "dependencies": {
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "three": "0.180.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "6.1.0",
+    "playwright": "1.58.2",
     "vite": "8.2.2"
   }
 }
