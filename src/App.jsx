@@ -56,7 +56,8 @@ const VIEW_IDS = new Set([
 ]);
 
 const viewFromHash = () => {
-  const requested = decodeURIComponent(window.location.hash.slice(1));
+  let requested;
+  try { requested = decodeURIComponent(window.location.hash.slice(1)); } catch { return 'laboratory'; }
   return VIEW_IDS.has(requested) ? requested : 'laboratory';
 };
 
@@ -93,15 +94,15 @@ export default function App() {
       settleTimer = 0;
     };
     const alignActiveHash = () => {
-      if (!activeId || window.location.hash.slice(1) !== activeId) return;
-      const target = document.getElementById(decodeURIComponent(activeId));
+      if (!activeId || viewFromHash() !== activeId) return;
+      const target = document.getElementById(activeId);
       if (!target) return;
       target.scrollIntoView({block:'start',behavior:'instant'});
       window.clearTimeout(settleTimer);
       settleTimer = 0;
       if (!document.querySelector('.lab-loading')) {
         settleTimer = window.setTimeout(() => {
-          const settledTarget = document.getElementById(decodeURIComponent(activeId));
+          const settledTarget = document.getElementById(activeId);
           settledTarget?.scrollIntoView({block:'start',behavior:'instant'});
           disconnectWatchers();
         }, 350);
@@ -113,9 +114,9 @@ export default function App() {
     };
     const scrollToHash = () => {
       disconnectWatchers();
-      activeId = window.location.hash.slice(1);
-      if (!activeId) return;
-      const target = document.getElementById(decodeURIComponent(activeId));
+      if (!window.location.hash) return;
+      activeId = viewFromHash();
+      const target = document.getElementById(activeId);
       if (!target) return;
       target.scrollIntoView({block:'start',behavior:'instant'});
       const shell = document.querySelector('.app-shell');

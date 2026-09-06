@@ -4,7 +4,7 @@ const escape = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&am
 const formula = value => escape(value).replace(/(\d+)/g, '<sub>$1</sub>');
 
 /** Presentation and goal selection only; graph edits stay in the main controller. */
-export function createDiscoveryCoach({ engine, library, getGraph, getSelectedAtom, getBondType, addElement, start, loadReference, refresh }) {
+export function createDiscoveryCoach({ engine, library, getGraph, getSelectedAtom, getBondType, addElement, selectAtom, start, loadReference, refresh }) {
   const $ = id => document.getElementById(id);
   let targetId = 'ethanol';
   let source = 'manual';
@@ -25,6 +25,10 @@ export function createDiscoveryCoach({ engine, library, getGraph, getSelectedAto
     if (goal && library.MOLECULES[goal.key]) loadReference(library.MOLECULES[goal.key]);
   });
   attachToggle.addEventListener('change', refresh);
+  $('discoverySelectHint').addEventListener('click', () => {
+    const id=lastView?.nextAction.atomIds?.[0];
+    if(id!=null)selectAtom(id);
+  });
   $('discoveryInventory').addEventListener('click', event => {
     const button = event.target.closest('[data-build-element]');
     if (button) addElement(button.dataset.buildElement, attachToggle.checked);
@@ -48,7 +52,7 @@ export function createDiscoveryCoach({ engine, library, getGraph, getSelectedAto
     $('discoveryStartBtn').textContent = graph.atoms.length ? 'Start fresh' : 'Start building';
     $('discoveryAttachContext').textContent = attaching
       ? `To ${engine.ELEMENTS[selected.symbol].name} · atom ${selected.id} · ${bondType} bond`
-      : attachToggle.checked ? 'Add your first atom, then click another element to attach it.' : 'Loose atoms: drop one onto another to make a bond.';
+      : attachToggle.checked ? graph.atoms.length ? 'Select an atom on the canvas before attaching another.' : 'Add your first atom, then click another element to attach it.' : 'Loose atoms: drop one onto another to make a bond.';
     $('discoveryInventory').querySelectorAll('[data-build-element]').forEach(button => {
       const symbol = button.dataset.buildElement;
       const entry = view.inventory.find(item => item.symbol === symbol);
@@ -70,6 +74,10 @@ export function createDiscoveryCoach({ engine, library, getGraph, getSelectedAto
       : view.nextAction.message;
     next.innerHTML = `<strong>${escape(nextTitle)}</strong><span>${escape(nextText)}</span>`;
     next.dataset.complete = String(view.complete);
+    const hintButton=$('discoverySelectHint');
+    const hintedAtom=graph.atoms.find(atom=>atom.id===view.nextAction.atomIds?.[0]);
+    hintButton.hidden=!hintedAtom||view.complete||source==='reference';
+    if(hintedAtom)hintButton.textContent=`Select ${hintedAtom.symbol} · atom ${hintedAtom.id}`;
     const shortSteps = { inventory: 'Atoms', skeleton: 'Skeleton', hydrogens: 'Hydrogens', identity: 'Identity' };
     $('discoverySteps').innerHTML = view.milestones.map(step => `<li data-complete="${step.complete}" title="${escape(step.label)}" aria-label="${escape(step.label)}: ${step.complete ? 'complete' : 'incomplete'}"><span class="step-check" aria-hidden="true">${step.complete ? '✓' : '○'}</span><span>${escape(shortSteps[step.id] || step.label)}</span></li>`).join('');
     $('discoverySteps').hidden = free;
@@ -114,5 +122,18 @@ export function createDiscoveryCoach({ engine, library, getGraph, getSelectedAto
     return view;
   }
 
-  return { render, getView: () => lastView, getSource: () => source, clearGoal() { targetId = null; }, setSource(value) { source = value; } };
+  return { render, getView: () => lastView, getSource: () => source, clearGoal() { targetId = null; }, setSource(value) { source = value; },
+    getSession() { return { targetId, choice: selector.value, source, collection: [...collection.keys()] }; },
+    restoreSession(saved) {
+      const valid=id=>DISCOVERY_GOALS.some(goal=>goal.id===id);
+      targetId=saved.targetId===null?null:valid(saved.targetId)?saved.targetId:'ethanol';
+      selector.value=valid(saved.choice)?saved.choice:targetId||'ethanol';
+      source=saved.source==='reference'?'reference':'manual';
+      collection.clear();
+      for(const key of (Array.isArray(saved.collection)?saved.collection:[]).slice(0,100)){
+        const molecule=typeof key==='string'&&Object.hasOwn(library.MOLECULES,key)?library.MOLECULES[key]:null;
+        if(molecule)collection.set(key,molecule.name);
+      }
+    },
+  };
 }

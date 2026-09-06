@@ -647,6 +647,7 @@ export function createMoleculeScene(host, callbacks = {}) {
     if (event.key === 'Escape') { cancelGesture(); callbacks.clearSelection?.(); }
   }
   function wheel(event) {
+    if (event.ctrlKey || event.metaKey) return;
     event.preventDefault(); event.stopPropagation();
     const delta = clamp(event.deltaY * (event.deltaMode === 1 ? 16 : 1), -120, 120);
     camera.zoom = clamp(camera.zoom * Math.exp(-delta * 0.0018), 0.28, 2.5);

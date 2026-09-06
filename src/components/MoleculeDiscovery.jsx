@@ -55,6 +55,7 @@ export function DiscoveryBuildTray() {
       </div>
       <div className="discovery-coach-row">
         <div className="discovery-next-action" id="discoveryNextAction" role="status"><span className="discovery-coach-icon" aria-hidden="true">↗</span><p>Choose <strong>Start building</strong>, then add your first carbon atom.</p></div>
+        <button id="discoverySelectHint" className="btn small" type="button" hidden>Select suggested atom</button>
         <ol className="discovery-steps" id="discoverySteps" aria-label="Build progress" />
       </div>
     </section>

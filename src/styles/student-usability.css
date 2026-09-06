@@ -1,0 +1,35 @@
+/* Keep essential student controls readable without changing the workbench. */
+.molecule-playground .discovery-element-name,
+.molecule-playground .discovery-attach-control,
+.molecule-playground .discovery-next-action,
+.molecule-playground .discovery-card p,
+.molecule-playground .discovery-facts dt,
+.molecule-playground .discovery-facts dd,
+.molecule-playground .rail-intro { font-size: .875rem; }
+.molecule-playground .discovery-element-count,
+.molecule-playground .discovery-attach-context,
+.molecule-playground .discovery-steps li,
+.molecule-playground .discovery-next-action > strong { font-size: .75rem; }
+.molecule-playground .discovery-element { min-height: 54px; }
+.molecule-playground .discovery-tray-top { flex-wrap: wrap; }
+.molecule-playground .discovery-inventory { flex-basis: 280px; }
+.molecule-playground .discovery-coach-row { align-items: flex-start; }
+.molecule-playground #discoverySelectHint { min-height: 44px; font-size: .875rem; }
+.molecule-playground #discoverySelectHint[hidden] { display: none; }
+.playground-draft-status { margin: 0; padding: 8px 15px; color: #bed5de; background: #142834; border-bottom: 1px solid #35515e; font-size: .75rem; line-height: 1.5; }
+.molecule-playground #workspace,
+.molecule-playground .scene-canvas { touch-action: pan-y pinch-zoom; }
+.molecule-playground .atom-node,
+.molecule-playground .bond-handle,
+.molecule-playground .scene-atom-button,
+.molecule-playground .scene-socket { touch-action: none; }
+.molecule-playground .atom-node:focus-visible,
+.molecule-playground .bond-handle:focus-visible,
+.molecule-playground .bond-hit:focus-visible { outline: 3px solid #9aeade; outline-offset: 5px; }
+@media (max-width: 560px) {
+  .molecule-playground .discovery-element { flex-wrap: wrap; gap: 5px; }
+  .molecule-playground .discovery-element-copy { text-align: center; }
+  .molecule-playground .discovery-attach-row { gap: 0 8px; }
+  .molecule-playground .discovery-tray-label { display: none; }
+  .molecule-playground .discovery-next-action { flex-wrap: wrap; }
+}

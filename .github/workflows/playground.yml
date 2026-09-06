@@ -22,6 +22,8 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run verify:discovery
+      - run: npm run verify:student-storage
+      - run: npm run verify:student-chemistry
       - run: npx playwright install --with-deps chromium
       - name: Start playground
         run: |
@@ -47,6 +49,47 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playground-screenshots
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  student-journeys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Start production preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 5173 > /tmp/student-preview.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:5173; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/student-preview.log
+          exit 1
+      - name: Verify student journeys
+        run: npm run verify:student-browser
+        env:
+          BASE_URL: http://127.0.0.1:5173
+          STUDENT_BROWSER: ${{ matrix.browser }}
+      - name: Upload student journey screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-${{ matrix.browser }}
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
