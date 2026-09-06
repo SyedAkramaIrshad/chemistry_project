@@ -1,10 +1,13 @@
 import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
+import { createDiscoveryLibrary } from './playgroundDiscovery.js';
+import { createDiscoveryCoach } from './discoveryCoach.js';
 
 (function () {
   'use strict';
   const E = window.ChemistryEngine;
   const L = window.ChemistryLibrary;
   if (!E || !L) throw new Error('Chemistry engine failed to load.');
+  const discoveryLibrary = createDiscoveryLibrary(L);
 
   const state = {
     atoms: [], bonds: [], nextId: 1, selectedAtomId: null, selectedBondKey: null,
@@ -31,6 +34,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
   let sceneEventId = 0;
   let sceneGraphRevision = 0;
   let sceneDrag = null;
+  let discoveryCoach = null;
 
   function sceneFeedback(kind, a, b) {
     sceneEvent = { id: ++sceneEventId, kind, a, b };
@@ -39,6 +43,8 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
   function updateScene(validation) {
     if (!moleculeScene) return;
     const atomStates = new Map(validation.atomStates.map(item => [item.atomId, item]));
+    const learningView = discoveryCoach?.getView();
+    const hints = new Map((learningView?.atomHints || []).map(hint => [hint.id, hint]));
     moleculeScene.update({
       atoms: state.atoms.map(atom => {
         const element = E.ELEMENTS[atom.symbol], atomState = atomStates.get(atom.id);
@@ -47,6 +53,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
           ...atom, color: element.color, name: element.name,
           atomicNumber: element.atomicNumber, mass: element.mass,
           sites: availableInteractionSites(atom, atomState), state: atomState?.state,
+          remainingBonds: hints.get(atom.id)?.remainingBonds,
           compatible: state.pendingBondAtomId && state.pendingBondAtomId !== atom.id
             ? resolveBondRequest(state.pendingBondAtomId, atom.id).ok : undefined,
           nonbondingElectrons: element.metal || !Number.isFinite(electrons) ? 0
@@ -58,6 +65,9 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
       pendingBondAtomId: state.pendingBondAtomId, bondType: state.bondType,
       showLewisElectrons: state.showLewisElectrons, event: sceneEvent,
       graphKey: sceneGraphRevision,
+      learning: Boolean(learningView?.target),
+      discoveryHighlight: learningView?.highlights || null,
+      discoveryHint: learningView?.target ? learningView.nextAction : null,
     });
     sceneEvent = null;
   }
@@ -167,7 +177,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
   }
 
   function snapshot() {
-    return JSON.stringify({atoms:state.atoms,bonds:state.bonds,nextId:state.nextId});
+    return JSON.stringify({atoms:state.atoms,bonds:state.bonds,nextId:state.nextId,discoverySource:discoveryCoach?.getSource()||'manual'});
   }
   function pushHistory(data) {
     state.history.push(data);
@@ -181,7 +191,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
   function getSelectedBond() { return state.bonds.find(b=>bondKey(b.a,b.b)===state.selectedBondKey) || null; }
   function currentGraph() { return {atoms:state.atoms,bonds:state.bonds}; }
   function currentValidation() { return E.validateGraph(state.atoms,state.bonds); }
-  function currentIdentity() { return E.identifyGraph(currentGraph(),L.MOLECULES); }
+  function currentIdentity() { return E.identifyGraph(currentGraph(),discoveryLibrary.MOLECULES); }
 
 
   function bondLabel(type) {
@@ -334,14 +344,74 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
     guide.innerHTML=`<div class="guide-icon ${iconClass}">${icon}</div><div class="guide-copy"><strong>${escapeHtml(data.title)}</strong><span>${escapeHtml(data.text)}</span></div><div class="guide-legend" aria-hidden="true"><span><i class="legend-electron"></i> nonbonding electron</span><span><i class="legend-site"></i> permitted site</span><span><i class="legend-closed"></i> blocked / complete</span></div>`;
   }
 
+  // New atoms find a free drawing position. Existing atom coordinates are never
+  // rearranged by this placement helper, even when the graph has an open site.
+  function freeAtomPosition(source = null) {
+    const rect = workspace.getBoundingClientRect();
+    const width = Math.max(180, rect.width), height = Math.max(240, rect.height);
+    const origin = source || { x: width / 2, y: height / 2 };
+    const candidates = [];
+    if (!state.atoms.length) return origin;
+    const angles = [0, -Math.PI / 2, Math.PI / 2, Math.PI, -Math.PI / 4, Math.PI / 4, -3 * Math.PI / 4, 3 * Math.PI / 4];
+    for (const radius of [124, 166, 210]) for (const angle of angles) {
+      const x = origin.x + Math.cos(angle) * radius, y = origin.y + Math.sin(angle) * radius;
+      if (x >= 58 && x <= width - 58 && y >= 64 && y <= height - 64) candidates.push({ x, y });
+    }
+    for (let y = 78; y <= height - 64; y += 74) for (let x = 68; x <= width - 58; x += 74) candidates.push({ x, y });
+    if (!candidates.length) return origin;
+    const nearest = point => Math.min(...state.atoms.map(atom => Math.hypot(point.x - atom.x, point.y - atom.y)));
+    const score = point => {
+      const clearance = nearest(point), distance = Math.hypot(point.x - origin.x, point.y - origin.y);
+      return Math.min(clearance, 112) * 5 - Math.abs(distance - 124) * .65;
+    };
+    candidates.sort((a, b) => score(b) - score(a));
+    return candidates[0];
+  }
+
+  function addBuildElement(symbol, attach) {
+    const source = attach ? getAtom(state.selectedAtomId) : null;
+    if (!source) { const point = freeAtomPosition(); addAtom(symbol, point.x, point.y); return; }
+    if (!E.ELEMENTS[symbol]) return;
+    const position = freeAtomPosition(source);
+    const atom = { id: state.nextId, symbol, charge: 0, ...position };
+    // Evaluate a candidate graph before committing either the atom or its bond.
+    const resolution = E.canApplyBond([...state.atoms, atom], state.bonds, source.id, atom.id, state.bondType);
+    if (!resolution.ok) {
+      setGuide('Cannot attach this atom', resolution.reason, 'error');
+      recordActivity('blocked', `${symbol} attachment rejected`, `${resolution.reason} No atom or bond was added.`, 'Engine verdict');
+      sceneFeedback('blocked', source.id, source.id);
+      render(); showToast(resolution.reason, 'error'); return;
+    }
+    saveHistory();
+    state.nextId++;
+    state.atoms.push(atom);
+    if (resolution.chargeUpdates) state.atoms.forEach(item => {
+      if (resolution.chargeUpdates[item.id] != null) item.charge = resolution.chargeUpdates[item.id];
+    });
+    state.bonds.push({ a: source.id, b: atom.id, type: state.bondType, order: E.BOND_TYPES[state.bondType].order });
+    state.pendingBondAtomId = null; state.bondDrag = null; state.selectedBondKey = null;
+    // Keep the chosen source selected so three Attach H clicks add exactly
+    // three explicit hydrogens to that carbon, each with its own Undo entry.
+    state.selectedAtomId = source.id;
+    discoveryCoach?.setSource('manual');
+    sceneGraphRevision++;
+    sceneFeedback('bond', source.id, atom.id);
+    setGuide(`${symbol} attached to ${source.symbol}`, `One atom and one ${bondLabel(state.bondType).toLowerCase()} bond were added. ${source.symbol} remains selected.`, 'ready');
+    recordActivity('bond', `Attached ${symbol} to ${source.symbol}`, 'One selected atom and its requested bond were added. No other atom was filled in or repositioned.', 'Learner action');
+    render();
+  }
+
   function addAtom(symbol,x,y,record=true) {
     if (!E.ELEMENTS[symbol]) return;
     if (record) saveHistory();
     const rect = workspace.getBoundingClientRect();
-    const px = Number.isFinite(x) ? x : rect.width/2 + (Math.random()-.5)*100;
-    const py = Number.isFinite(y) ? y : rect.height/2 + (Math.random()-.5)*100;
+    const position = freeAtomPosition();
+    const px = Number.isFinite(x) ? x : position.x;
+    const py = Number.isFinite(y) ? y : position.y;
     const atom = {id:state.nextId++,symbol,charge:0,x:Math.max(58,Math.min(rect.width-58,px)),y:Math.max(58,Math.min(rect.height-58,py))};
     state.atoms.push(atom);state.selectedAtomId=atom.id;state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
+    discoveryCoach?.setSource('manual');
+    sceneGraphRevision++;
     recordActivity('setup',`${symbol} atom placed`,'The atom was added without creating or repairing any bond.','Manual edit');
     render();
   }
@@ -349,6 +419,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
   function removeAtom(id) {
     const removedAtom=getAtom(id);if (!removedAtom) return;
     saveHistory();state.atoms=state.atoms.filter(a=>a.id!==id);state.bonds=state.bonds.filter(b=>b.a!==id&&b.b!==id);
+    discoveryCoach?.setSource('manual');
     if(state.selectedAtomId===id)state.selectedAtomId=null;if(state.pendingBondAtomId===id)state.pendingBondAtomId=null;
     const removedSymbol=removedAtom.symbol;state.selectedBondKey=null;state.bondDrag=null;clearGuide();
     recordActivity('break',`${removedSymbol} atom removed`,'Deleting an atom also removes its connected bonds. Use bond breaking when you want every atom to remain.','Manual edit');
@@ -359,6 +430,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
     const removed=getBond(a,b);if (!removed) return;
     const description=describeBond(removed);
     saveHistory();state.bonds=state.bonds.filter(x=>!((x.a===a&&x.b===b)||(x.a===b&&x.b===a)));
+    discoveryCoach?.setSource('manual');
     state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;
     const validation=currentValidation();
     setGuide('Bond broken',`${description} was removed. Both atoms remain on the canvas; open valences are now visible.`,'ready');
@@ -392,6 +464,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
       render();showToast(message,'error');return;
     }
     const actualType=resolution.type;saveHistory();
+    discoveryCoach?.setSource('manual');
     if(resolution.chargeUpdates)state.atoms.forEach(a=>{if(resolution.chargeUpdates[a.id]!=null)a.charge=resolution.chargeUpdates[a.id];});
     const existing=getBond(aId,bId);
     if(existing){existing.type=actualType;existing.order=E.BOND_TYPES[actualType].order;}
@@ -480,6 +553,9 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
       const e=E.ELEMENTS[atom.symbol],atomState=stateById.get(atom.id);
       const covalentSites=remainingBondCapacity(atom,atomState),interactionSites=availableInteractionSites(atom,atomState);
       const cluster=document.createElement('div');cluster.className='atom-cluster';cluster.dataset.id=atom.id;cluster.dataset.symbol=atom.symbol;cluster.dataset.charge=Number(atom.charge||0);cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;
+      const learning = discoveryCoach?.getView();
+      if(learning?.target && learning.nextAction.atomIds.includes(atom.id))cluster.classList.add('discovery-hint');
+      if(learning?.highlights?.atomIds.includes(atom.id))cluster.classList.add('discovery-group');
       if(state.selectedAtomId===atom.id)cluster.classList.add('selected');
       if(state.pendingBondAtomId===atom.id)cluster.classList.add('pending');
       if(interactionSites===0)cluster.classList.add('closed-shell');
@@ -558,7 +634,9 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
     const w=workspace.clientWidth,h=workspace.clientHeight;bondLayer.setAttribute('viewBox',`0 0 ${w} ${h}`);bondLayer.innerHTML='';
     for(const bond of state.bonds){
       const a=getAtom(bond.a),b=getAtom(bond.b);if(!a||!b)continue;const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,nx=-uy,ny=ux,type=bond.type||'single';
-      const selected=state.selectedBondKey===bondKey(bond.a,bond.b),visibleClass=`bond-visible${selected?' selected':''}`;
+      const selected=state.selectedBondKey===bondKey(bond.a,bond.b),learning=discoveryCoach?.getView(),key=bondKey(bond.a,bond.b);
+      const hinted=learning?.target&&learning.nextAction.bondKeys.includes(key),grouped=learning?.highlights?.bondKeys.includes(key);
+      const visibleClass=`bond-visible${selected?' selected':''}${hinted?' discovery-hint':''}${grouped?' discovery-group':''}`;
       const hit=svgLine(a.x,a.y,b.x,b.y,{class:`bond-hit${selected?' selected':''}`,'data-bond-key':bondKey(bond.a,bond.b),'data-a':bond.a,'data-b':bond.b,'data-bond-type':type,tabindex:'0',role:'button','aria-label':`Select ${describeBond(bond)}`});hit.addEventListener('click',ev=>{ev.stopPropagation();selectBond(bond.a,bond.b);});hit.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();ev.stopPropagation();selectBond(bond.a,bond.b);}});bondLayer.appendChild(hit);
       if(type==='ionic'){bondLayer.appendChild(svgLine(a.x,a.y,b.x,b.y,{class:visibleClass,stroke:'#7b8ca2','stroke-width':'4','stroke-linecap':'round','stroke-dasharray':'4 10'}));continue;}
       const spacing=6,offsets=type==='double'?[-spacing/2,spacing/2]:type==='triple'?[-spacing,0,spacing]:type==='aromatic'?[-spacing/2,spacing/2]:[0];
@@ -671,6 +749,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
       render();showToast(check.reason,'error');return;
     }
     saveHistory();atom.charge=value;state.pendingBondAtomId=null;state.bondDrag=null;state.selectedBondKey=null;clearGuide();
+    discoveryCoach?.setSource('manual');
     recordActivity('charge',`${atom.symbol} charge set to ${displayCharge(value)}`,`The charge changed only because you selected it. Bond connectivity was preserved.`,'Learner action');
     render();showToast(`${E.ELEMENTS[atom.symbol].name} charge set to ${displayCharge(value)}.`,'good');
   }
@@ -766,6 +845,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
   }
 
   function startBondRewriteMission() {
+    discoveryCoach?.clearGoal();
     state.activity=[];state.mission={active:true,id:'bond-rewrite'};state.bondType='single';
     document.querySelectorAll('.builder-toolbar [data-bond-type]').forEach(btn=>btn.classList.toggle('active',btn.dataset.bondType==='single'));
     const graph={
@@ -787,6 +867,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
 
   function render() {
     const validation=currentValidation(),identity=state.atoms.length?currentIdentity():null;
+    discoveryCoach?.render();
     renderAtoms(validation);renderBonds();renderInspector(validation);renderValidation(validation);renderSummary(validation,identity);renderGuide(validation);renderSaved();renderMission(validation);renderActivity();
     updateScene(validation);
   }
@@ -795,12 +876,14 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
     sceneDrag = null;
     sceneGraphRevision++;
     if(record&&state.atoms.length)saveHistory();state.atoms=[];state.bonds=[];state.selectedAtomId=null;state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
+    discoveryCoach?.setSource('manual');
     recordActivity('break','Canvas cleared','All atoms and bonds were removed by an explicit clear action.','Manual edit');render();
   }
 
   function undo() {
     sceneDrag = null;
     const prev=state.history.pop();if(!prev){showToast('Nothing to undo.');return;}const data=JSON.parse(prev);state.atoms=data.atoms;state.bonds=data.bonds;state.nextId=data.nextId;state.selectedAtomId=null;state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
+    discoveryCoach?.setSource(data.discoverySource || 'manual');
     sceneGraphRevision++;
     recordActivity('undo','Previous graph restored','Undo restored atoms, bonds, and charges from the last manual snapshot.','History');render();
   }
@@ -818,6 +901,7 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
     if(state.atoms.length)saveHistory();const rect=workspace.getBoundingClientRect(),sourceAtoms=graph.atoms.map(a=>({...a}));const minX=Math.min(...sourceAtoms.map(a=>a.x||0)),maxX=Math.max(...sourceAtoms.map(a=>a.x||0)),minY=Math.min(...sourceAtoms.map(a=>a.y||0)),maxY=Math.max(...sourceAtoms.map(a=>a.y||0));const sourceW=Math.max(100,maxX-minX),sourceH=Math.max(100,maxY-minY),scale=Math.min(1.18,(rect.width*.72)/sourceW,(rect.height*.72)/sourceH),idMap=new Map();state.atoms=[];state.bonds=[];
     sourceAtoms.forEach(a=>{const id=state.nextId++;idMap.set(a.id,id);state.atoms.push({id,symbol:a.symbol,charge:Number(a.charge||0),x:rect.width/2+(a.x-(minX+maxX)/2)*scale,y:rect.height/2+(a.y-(minY+maxY)/2)*scale});});
     graph.bonds.forEach(b=>state.bonds.push({a:idMap.get(b.a),b:idMap.get(b.b),type:b.type||'single',order:E.BOND_TYPES[b.type||'single']?.order??b.order??1}));state.selectedAtomId=null;state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
+    discoveryCoach?.setSource('reference');
     recordActivity('setup',announce.replace(/\.$/,''),'A known graph was loaded exactly as stored. No inference or automatic completion was applied.','Structure load');
     render();if(notify)showToast(announce,'good');
   }
@@ -1002,9 +1086,21 @@ import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
   $('sceneResetBtn').addEventListener('click',ev=>{ev.stopPropagation();moleculeScene?.fit();});
   $('sceneFallbackBtn').addEventListener('click',ev=>{ev.stopPropagation();if(wants3D)fallbackScene();else enableScene();});
 
+  discoveryCoach = createDiscoveryCoach({
+    engine: E, library: discoveryLibrary, getGraph: currentGraph,
+    getSelectedAtom: () => getAtom(state.selectedAtomId), getBondType: () => state.bondType,
+    addElement: addBuildElement,
+    start() {
+      state.mission.active = false; state.bondType = 'single';
+      document.querySelectorAll('.builder-toolbar [data-bond-type]').forEach(button => button.classList.toggle('active', button.dataset.bondType === 'single'));
+      clearWorkspace();
+      $('workspace').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+    loadReference(molecule) { state.mission.active = false; loadGraph(molecule, `${molecule.name} reference loaded.`); },
+    refresh: render,
+  });
   buildPalette();buildPresets();buildQuickSpecies();renderReactants();render();
   enableScene();
-  setTimeout(()=>{if(!state.atoms.length&&!state.mission.active)loadPreset('H2O',false,false);},250);
 })();
 
 export {};

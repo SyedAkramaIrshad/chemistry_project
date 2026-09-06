@@ -41,7 +41,9 @@
     "verify:chromatography": "node scripts/verify-chromatography.mjs",
     "verify:functional-groups": "node scripts/verify-functional-groups.mjs",
     "verify:electronic-bands": "node scripts/verify-electronic-bands.mjs",
-    "verify:playground": "node scripts/verify-playground.mjs"
+    "verify:playground": "node scripts/verify-playground.mjs",
+    "verify:discovery": "node scripts/verify-playground-discovery.mjs",
+    "verify:discovery-browser": "node scripts/verify-discovery-browser.mjs"
   },
   "dependencies": {
     "react": "19.2.8",

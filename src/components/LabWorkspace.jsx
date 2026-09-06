@@ -1,4 +1,5 @@
 import ExperimentGuide from './ExperimentGuide.jsx';
+import { DiscoveryGoalBar, DiscoveryBuildTray, DiscoveryPanel } from './MoleculeDiscovery.jsx';
 import '../styles/molecular-playground.css';
 import '../styles/molecular-scene.css';
 
@@ -53,6 +54,7 @@ function MolecularBuilder() {
         <p>Make a connection. See what changes.</p>
       </header>
       <BuilderToolbar />
+      <DiscoveryBuildTray />
       <div id="workspace" role="application" aria-label="Molecular graph building workspace" aria-describedby="sceneStatus">
         <div id="sceneLayer" />
         <div className="canvas-hud" aria-hidden="true"><span><i /> Live graph</span><small>You control every edit</small></div>
@@ -77,7 +79,7 @@ function MolecularBuilder() {
           <div className="empty-inner">
             <div className="empty-orbit" aria-hidden="true"><i /><i /><i /></div>
             <h3>A little curiosity.<br />A whole new molecule.</h3>
-            <p>Pick an element or load a starting molecule. Select an atom to see its symbol, electrons, and bonds.</p>
+            <p>Add a building block above. Connect the green sockets to discover what your atoms can become.</p>
           </div>
         </div>
       </div>
@@ -106,6 +108,7 @@ function MolecularBuilder() {
 function InspectorStack() {
   return (
     <aside className="right-stack playground-inspector" aria-label="Atom properties and structure state">
+      <DiscoveryPanel />
       <details className="panel inspector-panel playground-rail" open>
         <summary className="panel-header rail-heading"><span className="rail-heading-copy"><span className="panel-code">Look a little closer</span><h2>Atom inspector</h2></span><span className="rail-chevron" aria-hidden="true">⌄</span></summary>
         <div className="panel-body" id="inspector"><p className="inspector-empty">Select an atom or bond to explore its properties.</p></div>
@@ -127,9 +130,10 @@ export default function LabWorkspace() {
   return (
     <main className="molecule-playground lab-grid" id="laboratory">
       <header className="playground-heading">
-        <div className="playground-title"><p>CHEMLAB / PLAYGROUND</p><h2>Small atoms. <em>Big possibilities.</em></h2><span>Build a bond. Break it apart. Follow your curiosity.</span></div>
-        <div className="playground-process" aria-label="How to use the playground"><span><i>01</i> Choose an atom</span><span><i>02</i> Make a connection</span><span><i>03</i> Ask why</span></div>
+        <div className="playground-title"><p>CHEMLAB / PLAYGROUND</p><h2>Small atoms. <em>Real discoveries.</em></h2><span>Build it atom by atom. Watch a molecule take shape.</span></div>
+        <div className="playground-process" aria-label="How to use the playground"><span><i>01</i> Add atoms</span><span><i>02</i> Connect them</span><span><i>03</i> Discover a molecule</span></div>
       </header>
+      <DiscoveryGoalBar />
       <section className="playground-table" aria-label="Interactive molecular construction table"><ElementLibrary /><MolecularBuilder /><InspectorStack /></section>
       <section className="playground-challenge" aria-label="Guided bond rewriting challenge">
         <div className="challenge-ribbon"><span className="challenge-kicker">YOUR FIRST EXPERIMENT</span><strong>One bond.<br />A different story.</strong><div className="challenge-molecule" aria-hidden="true"><span>O</span><i /> <span>H</span></div><p>Break an O–H bond, keep every atom, and explore a new connection.</p></div>

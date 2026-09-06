@@ -114,7 +114,6 @@ try {
   activePage = page;
   watchErrors(page, '3D');
   await page.goto(`${baseURL}/#laboratory`);
-  await page.locator('#atomLayer .atom-node').first().waitFor({ state: 'attached' });
   await page.locator('#sceneLayer canvas').waitFor({ state: 'visible' });
 
   // The required CONTRIBUTING.md journey: break exactly one O–H, preserve all
@@ -250,7 +249,7 @@ try {
   activePage = fallback;
   watchErrors(fallback, 'WebGL unavailable');
   await fallback.goto(`${baseURL}/#laboratory`);
-  await fallback.locator('#atomLayer .atom-node').first().waitFor({ state: 'visible' });
+  await fallback.locator('#sceneStatus').filter({ hasText: /2D editing ready/ }).waitFor({ state: 'visible' });
   assert.equal(await fallback.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), true);
   const fallbackInitial = await loadChallenge(fallback);
   await selectBond(fallback, fallbackInitial.bonds[0]);

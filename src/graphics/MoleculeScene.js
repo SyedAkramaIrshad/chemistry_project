@@ -8,6 +8,21 @@ const clamp = THREE.MathUtils.clamp;
 const easeOut = value => 1 - (1 - value) ** 3;
 const nameOf = atom => atom.name || ELEMENT_NAMES[atom.symbol] || atom.symbol;
 
+/** Pure presentation calculation: canonical atom coordinates remain untouched. */
+function cameraFit(atoms, width, height, rotation) {
+  const bounds = graphBounds(atoms);
+  const projected = atoms.map(atom => new THREE.Vector3((Number(atom.x) || 0) - bounds.x, bounds.y - (Number(atom.y) || 0), 0).applyEuler(rotation));
+  const minX = projected.length ? Math.min(...projected.map(point => point.x)) : 0;
+  const maxX = projected.length ? Math.max(...projected.map(point => point.x)) : 0;
+  const minY = projected.length ? Math.min(...projected.map(point => point.y)) : 0;
+  const maxY = projected.length ? Math.max(...projected.map(point => point.y)) : 0;
+  return {
+    center: { x: bounds.x, y: bounds.y },
+    offset: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
+    zoom: clamp(Math.min(width / Math.max(220, maxX - minX + 170), Math.max(180, height - 170) / Math.max(170, maxY - minY + 160), 2.25), 0.28, 2.25),
+  };
+}
+
 /**
  * A presentation layer over the canonical, manually edited molecular graph.
  * Graph x/y stay in workspace pixels. Orbit, zoom, shadows and transient motion
@@ -34,6 +49,11 @@ export function createMoleculeScene(host, callbacks = {}) {
   announcer.className = 'scene-status';
   announcer.setAttribute('role', 'status');
   announcer.setAttribute('aria-live', 'polite');
+  const learningTag = document.createElement('span');
+  learningTag.className = 'scene-functional-group-tag';
+  learningTag.setAttribute('aria-hidden', 'true');
+  learningTag.hidden = true;
+  labelLayer.append(learningTag);
   host.append(canvas, labelLayer, announcer);
   host.dataset.status = 'ready';
 
@@ -79,9 +99,11 @@ export function createMoleculeScene(host, callbacks = {}) {
 
   const atoms = new Map(), bonds = new Map(), ghosts = [];
   let snapshot = { atoms: [], bonds: [] }, width = 1, height = 1;
-  let center = { x: 0, y: 0 }, mode = 'edit', disposed = false, contextLost = false;
+  let center = { x: 0, y: 0 }, cameraOffset = { x: 0, y: 0 }, mode = 'edit', disposed = false, contextLost = false;
   let raf = 0, visible = true, hasFitted = false, gesture = null, lastEventId = null;
   let animation = null, suppressClickUntil = 0, suppressClickId = null;
+  let discovery = { atomIds: new Set(), bondKeys: new Set(), label: '', anchorId: null };
+  let discoveryHint = { atomIds: new Set(), bondKeys: new Set() };
   const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   let reducedMotion = motionQuery.matches;
   const raycaster = new THREE.Raycaster();
@@ -97,7 +119,8 @@ export function createMoleculeScene(host, callbacks = {}) {
   function updateCameraFrame() {
     // The bottom guide is taller than the top controls. Offset only the view,
     // by a fixed screen distance, so terminal atoms clear its caption on mobile.
-    camera.position.y = -26 / camera.zoom;
+    camera.position.x = cameraOffset.x;
+    camera.position.y = cameraOffset.y - 26 / camera.zoom;
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld();
   }
@@ -106,11 +129,15 @@ export function createMoleculeScene(host, callbacks = {}) {
     if (disposed) return;
     const nextWidth = host.clientWidth, nextHeight = host.clientHeight;
     if (!nextWidth || !nextHeight) return;
+    const dimensionsChanged = nextWidth !== width || nextHeight !== height;
     width = nextWidth; height = nextHeight;
     renderer.setSize(width, height, false);
     camera.left = -width / 2; camera.right = width / 2;
     camera.top = height / 2; camera.bottom = -height / 2;
-    updateCameraFrame();
+    // A narrower viewport must not strand terminal atoms outside the stage.
+    // Refit only the camera, retaining the student's current orbit direction.
+    if (dimensionsChanged && hasFitted && snapshot.atoms.length) applyCameraFit();
+    else updateCameraFrame();
     invalidate();
   }
 
@@ -178,6 +205,11 @@ export function createMoleculeScene(host, callbacks = {}) {
     const ring = new THREE.Mesh(ringGeometry, ringMaterial);
     ring.scale.setScalar(radius + 8); ring.visible = false;
     root.add(ring);
+    // Functional groups get their own quiet outer halo. The inner ring keeps
+    // its existing selection, compatibility and rejected-edit meaning.
+    const learningRing = new THREE.Mesh(ringGeometry, new THREE.MeshBasicMaterial({ color: 0xf2ca7c, transparent: true, opacity: 0.42, depthWrite: false }));
+    learningRing.scale.setScalar(radius + 14); learningRing.visible = false;
+    root.add(learningRing);
     const label = document.createElement('div');
     label.className = 'scene-atom-label';
     label.dataset.atomId = String(atom.id);
@@ -222,15 +254,16 @@ export function createMoleculeScene(host, callbacks = {}) {
     socket.addEventListener('pointerdown', event => startGesture(event, 'socket', atom.id));
     socket.addEventListener('click', event => { event.stopPropagation(); if (event.detail === 0) callbacks.beginBond?.(atom.id); });
     const electrons = document.createElement('span'); electrons.className = 'scene-electrons'; electrons.setAttribute('aria-hidden', 'true');
-    label.append(node, socket, electrons); labelLayer.append(label);
-    const record = { atom, radius, mesh, ring, label, node, charge, socket, count, electrons, projected: null };
+    const capacity = document.createElement('span'); capacity.className = 'scene-bond-capacity'; capacity.hidden = true; capacity.setAttribute('aria-hidden', 'true');
+    label.append(node, socket, electrons, capacity); labelLayer.append(label);
+    const record = { atom, radius, mesh, ring, learningRing, label, node, charge, socket, count, electrons, capacity, projected: null };
     atoms.set(atom.id, record);
     return record;
   }
 
   function removeAtom(record) {
-    root.remove(record.mesh, record.ring);
-    record.mesh.material.dispose(); record.ring.material.dispose(); record.label.remove();
+    root.remove(record.mesh, record.ring, record.learningRing);
+    record.mesh.material.dispose(); record.ring.material.dispose(); record.learningRing.material.dispose(); record.label.remove();
   }
 
   function addBond(bond, ghost = false) {
@@ -282,9 +315,11 @@ export function createMoleculeScene(host, callbacks = {}) {
     const ionic = record.bond.type === 'ionic';
     const order = ionic ? 1 : clamp(Math.round(Number(record.bond.order) || ({ double: 2, triple: 3 }[record.bond.type] || 1)), 1, 3);
     const selected = snapshot.selectedBondKey === record.key && !record.ghost;
+    const highlighted = discovery.bondKeys.has(record.key) && !record.ghost;
+    const hinted = discoveryHint.bondKeys.has(record.key) && !record.ghost;
     record.materials.forEach(material => {
-      material.emissive.set(selected ? 0x339d91 : 0x000000);
-      material.emissiveIntensity = selected ? 0.3 : 0;
+      material.emissive.set(selected ? 0x339d91 : highlighted ? 0xc5923c : hinted ? 0x46b8d4 : 0x000000);
+      material.emissiveIntensity = selected ? 0.3 : highlighted ? 0.22 : hinted ? 0.28 : 0;
       if (record.ghost) material.opacity = (1 - breakProgress) * 0.8;
     });
     const separation = order === 2 ? 6.7 : 8.5;
@@ -309,6 +344,8 @@ export function createMoleculeScene(host, callbacks = {}) {
       root.localToWorld(midpoint); midpoint.project(camera);
       record.node.style.transform = `translate(${(midpoint.x + 1) * width / 2}px,${(1 - midpoint.y) * height / 2}px) translate(-50%,-50%)`;
       record.node.classList.toggle('is-selected', selected);
+      record.node.classList.toggle('learning-group', highlighted);
+      record.node.classList.toggle('learning-hint', hinted);
       record.node.setAttribute('aria-pressed', String(selected));
       record.node.style.zIndex = '1';
       record.node.hidden = midpoint.z < -1 || midpoint.z > 1;
@@ -343,10 +380,16 @@ export function createMoleculeScene(host, callbacks = {}) {
       positions.set(record.atom.id, position);
       record.mesh.position.copy(position);
       record.ring.position.copy(position); record.ring.quaternion.copy(billboard);
+      record.learningRing.position.copy(position); record.learningRing.quaternion.copy(billboard);
       const selected = snapshot.selectedAtomId === record.atom.id, pending = snapshot.pendingBondAtomId === record.atom.id;
       const compatible = record.atom.compatible === true;
       const incompatible = record.atom.compatible === false;
       const blocked = animation?.kind === 'blocked' && feedback < 1 && (animation.a === record.atom.id || animation.b === record.atom.id);
+      const highlighted = discovery.atomIds.has(record.atom.id);
+      const hinted = discoveryHint.atomIds.has(record.atom.id);
+      record.learningRing.visible = (highlighted || hinted) && !blocked && !pending && !compatible && !incompatible && !selected;
+      record.learningRing.material.color.set(highlighted ? 0xf2ca7c : 0x7ddded);
+      record.learningRing.material.opacity = highlighted ? 0.42 : 0.72;
       record.ring.visible = selected || pending || blocked || compatible;
       record.ring.material.color.set(blocked ? 0xff7c7c : pending || compatible ? 0x91ffcd : 0x79cce9);
       record.ring.material.opacity = blocked ? 0.35 + Math.sin(feedback * Math.PI) * 0.6 : compatible ? 0.62 : 0.85;
@@ -364,6 +407,20 @@ export function createMoleculeScene(host, callbacks = {}) {
       record.label.classList.toggle('is-pending', pending);
       record.label.classList.toggle('is-compatible', compatible);
       record.label.classList.toggle('is-incompatible', incompatible);
+      record.label.classList.toggle('learning-group', highlighted);
+      record.label.classList.toggle('learning-hint', hinted);
+      const remainingBonds = record.atom.remainingBonds;
+      record.capacity.hidden = !(snapshot.learning && selected && Number.isInteger(remainingBonds) && remainingBonds >= 0 && (width >= 560 || remainingBonds > 0));
+      record.capacity.style.top = 'calc(100% + 16px)';
+      record.capacity.style.bottom = 'auto';
+      if (!record.capacity.hidden && (1 - projected.y) * height / 2 + diameter / 2 + 40 > height - 132) {
+        // Keep a useful open-site hint above low atoms. On narrow stages the
+        // redundant "filled" chip stays in the inspector and accessible name.
+        if ((1 - projected.y) * height / 2 - diameter / 2 - 40 >= 94) {
+          record.capacity.style.top = 'auto';
+          record.capacity.style.bottom = 'calc(100% + 16px)';
+        } else record.capacity.hidden = true;
+      }
       record.node.setAttribute('aria-pressed', String(selected));
       record.mesh.material.emissive.set(pending ? 0x3b8b66 : selected ? 0x29485d : 0x000000);
       record.mesh.material.emissiveIntensity = selected || pending ? 0.14 : 0;
@@ -378,9 +435,48 @@ export function createMoleculeScene(host, callbacks = {}) {
       if (t >= 1) { removeBond(record); ghosts.splice(index, 1); }
       else { renderBond(record, positions, 1, easeOut(t)); active = true; }
     }
+    positionLearningTag();
     if (animation && feedback >= 1) animation = null;
     renderer.render(scene, camera);
     if (active) invalidate();
+  }
+
+  function positionLearningTag() {
+    const anchor = atoms.get(discovery.anchorId);
+    const projected = anchor?.projected;
+    learningTag.hidden = true;
+    if (!anchor || !projected || anchor.label.hidden || !discovery.label) return;
+    const x = (projected.x + 1) * width / 2, y = (1 - projected.y) * height / 2;
+    const radius = anchor.radius * camera.zoom;
+    // Keep the annotation outside the atom and clear of the scene controls and
+    // bottom guide. Hide it when zoom leaves no room; the accessible atom and
+    // bond names still identify the group.
+    const tagWidth = Math.min(174, width - 24), tagHeight = 28;
+    const minY = 94, maxY = height - 142 - tagHeight;
+    const below = y + radius + (anchor.capacity.hidden ? 22 : 54), above = y - radius - tagHeight - 22;
+    const top = below <= maxY ? below : above;
+    if (tagWidth < 110 || top < minY || top > maxY || x < 0 || x > width) return;
+    learningTag.style.width = `${tagWidth}px`;
+    learningTag.style.transform = `translate(${clamp(x - tagWidth / 2, 12, width - tagWidth - 12)}px,${top}px)`;
+    learningTag.hidden = false;
+  }
+
+  function readDiscoveryHighlight(next) {
+    const supplied = next.discoveryHighlight;
+    const atomIds = new Set(Array.isArray(supplied?.atomIds) ? supplied.atomIds : []);
+    const bondKeys = new Set(Array.isArray(supplied?.bondKeys) ? supplied.bondKeys : []);
+    const atomsById = new Map(next.atoms.map(atom => [atom.id, atom]));
+    // The controller owns chemical recognition. Only annotate the supplied
+    // O–H edge if it still exists, so an edit cannot leave a stale group label.
+    const groupBond = next.bonds.find(bond => {
+      const a = atomsById.get(bond.a), b = atomsById.get(bond.b);
+      return a && b && atomIds.has(a.id) && atomIds.has(b.id) && bondKeys.has(canonicalBondKey(a.id, b.id)) &&
+        (a.symbol === 'O' && b.symbol === 'H' || a.symbol === 'H' && b.symbol === 'O') &&
+        (bond.type || 'single') === 'single' && (Number(bond.order) || 1) === 1;
+    });
+    if (!groupBond || typeof supplied?.label !== 'string' || !supplied.label.trim()) return { atomIds: new Set(), bondKeys: new Set(), label: '', anchorId: null };
+    const anchorId = atomsById.get(groupBond.a).symbol === 'O' ? groupBond.a : groupBond.b;
+    return { atomIds, bondKeys, label: supplied.label, anchorId };
   }
 
   function update(next) {
@@ -390,6 +486,13 @@ export function createMoleculeScene(host, callbacks = {}) {
     if (gesture && next.graphKey != null && next.graphKey !== snapshot.graphKey) cancelGesture();
     const previous = snapshot;
     snapshot = { ...next, atoms: next.atoms.map(atom => ({ ...atom })), bonds: next.bonds.map(bond => ({ ...bond })) };
+    discovery = readDiscoveryHighlight(snapshot);
+    discoveryHint = {
+      atomIds: new Set(Array.isArray(next.discoveryHint?.atomIds) ? next.discoveryHint.atomIds : []),
+      bondKeys: new Set(Array.isArray(next.discoveryHint?.bondKeys) ? next.discoveryHint.bondKeys : []),
+    };
+    learningTag.textContent = discovery.label;
+    learningTag.dataset.sceneFunctionalGroup = discovery.label;
     const event = next.event;
     const eventIsNew = event && event.id !== lastEventId;
     if (eventIsNew) lastEventId = event.id;
@@ -401,11 +504,18 @@ export function createMoleculeScene(host, callbacks = {}) {
       record.charge.textContent = formatCharge(atom.charge);
       record.charge.hidden = !Number(atom.charge);
       const count = clamp(Number(atom.sites) || 0, 0, 8);
+      const groupLabel = discovery.atomIds.has(atom.id) ? ` ${discovery.label}.` : '';
+      const hintLabel = discoveryHint.atomIds.has(atom.id) ? ' Suggested next step.' : '';
+      if (groupLabel) record.node.dataset.sceneFunctionalGroup = discovery.label;
+      else delete record.node.dataset.sceneFunctionalGroup;
+      const remaining = Number.isInteger(atom.remainingBonds) && atom.remainingBonds >= 0 ? atom.remainingBonds : null;
+      const capacityLabel = remaining == null ? '' : remaining === 0 ? 'Bonding sites filled' : `${remaining} bond${remaining === 1 ? '' : 's'} left`;
+      record.capacity.textContent = capacityLabel;
       record.socket.hidden = count === 0;
       record.socket.setAttribute('aria-label', `Start a ${snapshot.bondType || 'single'} bond from ${nameOf(atom)} atom ${atom.id}. ${count} permitted interaction site${count === 1 ? '' : 's'}.`);
-      record.node.setAttribute('aria-label', `${nameOf(atom)} atom ${atom.id}, ${Number(atom.charge) ? `formal charge ${formatCharge(atom.charge)}` : 'neutral'}. ${count} permitted interaction site${count === 1 ? '' : 's'}. Select to inspect properties.`);
+      record.node.setAttribute('aria-label', `${nameOf(atom)} atom ${atom.id}, ${Number(atom.charge) ? `formal charge ${formatCharge(atom.charge)}` : 'neutral'}. ${count} permitted interaction site${count === 1 ? '' : 's'}.${groupLabel}${hintLabel}${snapshot.learning && capacityLabel ? ` ${capacityLabel}.` : ''} Select to inspect properties.`);
       record.count.textContent = count > 1 ? String(count) : '';
-      record.node.title = `${nameOf(atom)} (${atom.symbol})${atom.atomicNumber ? ` · atomic number ${atom.atomicNumber}` : ''}${atom.mass ? ` · atomic mass ${atom.mass}` : ''}${atom.charge ? ` · formal charge ${formatCharge(atom.charge)}` : ''}. Select to inspect. Drag to move. B starts a permitted bond.`;
+      record.node.title = `${nameOf(atom)} (${atom.symbol})${atom.atomicNumber ? ` · atomic number ${atom.atomicNumber}` : ''}${atom.mass ? ` · atomic mass ${atom.mass}` : ''}${atom.charge ? ` · formal charge ${formatCharge(atom.charge)}` : ''}.${groupLabel}${hintLabel} Select to inspect. Drag to move. B starts a permitted bond.`;
       record.node.dataset.charge = String(Number(atom.charge) || 0);
       const electronCount = snapshot.showLewisElectrons ? clamp(Math.round(Number(atom.nonbondingElectrons) || 0), 0, 8) : 0;
       if (record.electrons.childElementCount !== electronCount) {
@@ -433,7 +543,7 @@ export function createMoleculeScene(host, callbacks = {}) {
       const record = bonds.get(key) || addBond(bond);
       record.bond = { ...bond }; bonds.set(key, record);
       record.node.dataset.bondType = bond.type || 'single';
-      record.node.setAttribute('aria-label', `${nameOf(atoms.get(bond.a).atom)} ${bond.type || 'single'} bond to ${nameOf(atoms.get(bond.b).atom)}. Select to inspect or break.`);
+      record.node.setAttribute('aria-label', `${nameOf(atoms.get(bond.a).atom)} ${bond.type || 'single'} bond to ${nameOf(atoms.get(bond.b).atom)}.${discovery.bondKeys.has(key) ? ` ${discovery.label}.` : ''}${discoveryHint.bondKeys.has(key) ? ' Suggested next step.' : ''} Select to inspect or break.`);
       if (eventIsNew && event.kind === 'bond' && key === canonicalBondKey(event.a, event.b) && !reducedMotion) record.bornAt = performance.now();
     }
     if (eventIsNew) {
@@ -450,16 +560,19 @@ export function createMoleculeScene(host, callbacks = {}) {
     if (disposed) return;
     cancelGesture();
     resize();
-    const bounds = graphBounds(snapshot.atoms);
-    center = { x: bounds.x, y: bounds.y };
-    // Small structures should feel like the subject of the canvas. Reserve
-    // space for the toolbar, atom labels, sockets and the bottom guide while
-    // allowing a three-atom starting structure to fill the available stage.
-    camera.zoom = clamp(Math.min(width / Math.max(220, bounds.width + 170), Math.max(180, height - 170) / Math.max(170, bounds.height + 160), 2.25), 0.28, 2.25);
     root.rotation.set(0.17, -0.19, 0);
-    updateCameraFrame();
+    applyCameraFit();
     hasFitted = snapshot.atoms.length > 0;
     invalidate();
+  }
+
+  function applyCameraFit() {
+    // Margin includes atom labels, sockets, top controls and the bottom guide.
+    const frame = cameraFit(snapshot.atoms, width, height, root.rotation);
+    center = frame.center;
+    cameraOffset = frame.offset;
+    camera.zoom = frame.zoom;
+    updateCameraFrame();
   }
 
   function setMode(nextMode) {

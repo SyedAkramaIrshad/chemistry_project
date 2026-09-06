@@ -10,7 +10,26 @@ The central interaction rule is simple:
 
 > Explain, permit, or reject the learner's action—but never silently repair their structure.
 
-## Start with the bond-rewriting challenge
+## Build a compound, one atom at a time
+
+The playground opens on an empty canvas with **ethanol** as the first goal. Choose ethanol, methanol, water, methane, dimethyl ether, or ethane—or choose **Free build** to explore without a target. Changing the goal preserves the current graph.
+
+To build ethanol using the quick atom tray:
+
+1. Add C, then choose **Attach C** to make the C–C bond. The first carbon stays selected.
+2. Choose **Attach H** three times to give that first carbon its three hydrogens.
+3. Select the second carbon, attach H twice, then attach O.
+4. Select the oxygen and attach H. The complete **CH₃–CH₂–OH** graph is recognized as **Ethanol · C₂H₅OH**, with molecular formula **C₂H₆O**.
+
+Each attachment adds exactly the atom and bond requested, after the chemistry engine checks the candidate. An invalid attachment adds nothing. Each accepted attachment is one Undo step. Turn off **Attach to selected atom** to place loose atoms, then connect them through the existing sockets.
+
+The coach shows atom counts, the carbon/oxygen skeleton, hydrogen placement, and identity as separate milestones. Its hints follow the current graph, so atoms can be added in any order. Suggested atoms and bonds are highlighted; recognized alcohols also highlight their O–H group. Breaking a required bond immediately withdraws the complete identity, and Undo restores it.
+
+**Formula is not identity.** Rewire the same two carbons, six hydrogens, and one oxygen as **CH₃–O–CH₃** and the playground recognizes **dimethyl ether**, explains the isomer relationship, and does not award the ethanol goal. Recognition checks the entire connected graph, including bond types and formal charges.
+
+**Start fresh** explicitly clears the canvas. **Show reference** explicitly loads the selected example and labels it as a reference; it does not count as a new discovery. The right panel keeps the compounds recognized during the current session. These are molecule drawings, not claims of laboratory synthesis.
+
+## Try the bond-rewriting challenge
 
 The guided **H₂O + N** challenge demonstrates the full learning loop:
 
@@ -91,6 +110,15 @@ npm run verify:playground
 
 This checks atom properties, conservation during bond edits, blocked connections, exact undo, bond-order changes, dragging, camera isolation, responsive layouts, and the 2D fallback. It writes screenshots to `test-results/`. The Molecular playground GitHub Actions workflow runs the same checks on pull requests.
 
+The discovery checks cover explicit ethanol construction, formula/isomer distinction, reordered graph IDs, missing hydrogens, extra atoms, formal charges, nonlinear progress, and non-destructive goal changes:
+
+```bash
+npm run verify:discovery
+npm run verify:discovery-browser
+```
+
+The discovery browser script starts a temporary Vite server automatically unless `BASE_URL` is supplied. Both browser suites accept `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` for an existing Chromium executable.
+
 ## Other learning workspaces
 
 The navigation also exposes focused workspaces for atomic structure, molecular geometry, molecular orbitals, stoichiometry, equilibrium, spectroscopy, thermochemistry, electrochemistry, and other university-chemistry topics.
@@ -114,6 +142,9 @@ Key playground files:
 - [`src/components/LabWorkspace.jsx`](src/components/LabWorkspace.jsx) — molecular construction interface
 - [`src/components/ExperimentGuide.jsx`](src/components/ExperimentGuide.jsx) — H₂O + N guided challenge
 - [`src/chemistry/controller.js`](src/chemistry/controller.js) — graph edits and rejection behavior
+- [`src/chemistry/playgroundDiscovery.js`](src/chemistry/playgroundDiscovery.js) — graph-derived goals, compound recognition, and isomer feedback
+- [`src/chemistry/discoveryCoach.js`](src/chemistry/discoveryCoach.js) — live learning feedback and goal controls
+- [`src/components/MoleculeDiscovery.jsx`](src/components/MoleculeDiscovery.jsx) — molecule goals, quick atom tray, and discovery panel
 - [`src/graphics/MoleculeScene.js`](src/graphics/MoleculeScene.js) — disposable 3D presentation and accessible scene controls
 - [`src/graphics/sceneMath.js`](src/graphics/sceneMath.js) — camera bounds and visual fragment feedback
 - [`src/styles/molecular-playground.css`](src/styles/molecular-playground.css) — playground presentation
@@ -131,6 +162,8 @@ It does not:
 - claim that every chemically relevant exception is implemented.
 
 Open, radical, incomplete, disconnected, and unsupported states remain editable so learners can inspect them.
+
+The six discovery goals link to their formula/structure reference records in the [NIST Chemistry WebBook](https://webbook.nist.gov/chemistry/). Alcohol-group terminology follows the [IUPAC Gold Book](https://goldbook.iupac.org/terms/view/A00204); highlights are limited to the recognized methanol and ethanol references.
 
 ## Documentation
 
