@@ -48,7 +48,7 @@ export function createDiscoveryCoach({ engine, library, getGraph, getSelectedAto
     $('discoveryStartBtn').textContent = graph.atoms.length ? 'Start fresh' : 'Start building';
     $('discoveryAttachContext').textContent = attaching
       ? `To ${engine.ELEMENTS[selected.symbol].name} · atom ${selected.id} · ${bondType} bond`
-      : 'Add one loose atom. Select an atom to attach to it.';
+      : attachToggle.checked ? 'Add your first atom, then click another element to attach it.' : 'Loose atoms: drop one onto another to make a bond.';
     $('discoveryInventory').querySelectorAll('[data-build-element]').forEach(button => {
       const symbol = button.dataset.buildElement;
       const entry = view.inventory.find(item => item.symbol === symbol);

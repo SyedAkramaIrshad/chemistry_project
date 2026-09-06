@@ -108,6 +108,69 @@ async function noOverflow(width) {
     `The ${width}px student playground must fit the viewport (${dimensions.content}px content).`);
 }
 
+async function paletteAtom(symbol) {
+  const names = { O: 'Oxygen', H: 'Hydrogen' };
+  await page.locator('#elementSearch').fill(names[symbol]);
+  await page.locator('#atomPalette .atom-choice').click();
+  await page.locator('#elementSearch').fill('');
+}
+
+async function verifyWaterConnections(renderer) {
+  await page.locator('#discoveryGoalSelect').selectOption('water');
+  await page.locator('#discoveryStartBtn').click();
+  await page.locator('#discoveryAttachToggle').check();
+  for (const sequence of [['O', 'H', 'H'], ['H', 'O', 'H']]) {
+    await page.locator('#discoveryStartBtn').click();
+    for (const symbol of sequence) await paletteAtom(symbol);
+    assert.equal(await page.locator('#discoveryCard').getAttribute('data-recognized'), 'H2O', `${renderer}: palette ${sequence.join(' → ')} creates water.`);
+    const water = await graph();
+    assert.equal(water.atoms.length, 3);
+    assert.equal(water.bonds.length, 2);
+    await paletteAtom('H');
+    assert.deepEqual(await graph(), water, 'A third H cannot overfill oxygen or add a stray atom.');
+    await page.locator('#undoBtn').click();
+    assert.equal((await graph()).atoms.length, 2, 'Rejected attachment must not consume an Undo step.');
+  }
+
+  await page.locator('#discoveryStartBtn').click();
+  await page.locator('#discoveryAttachToggle').uncheck();
+  for (const symbol of ['H', 'H', 'O']) await paletteAtom(symbol);
+  const loose = await graph();
+  assert.equal(loose.bonds.length, 0);
+  if (renderer === '3D') await page.locator('#sceneResetBtn').click();
+  await page.locator('#workspace').scrollIntoViewIfNeeded();
+  const oxygen = loose.atoms.find(atom => atom.symbol === 'O');
+  const hydrogens = loose.atoms.filter(atom => atom.symbol === 'H');
+  const atomControl = id => page.locator(renderer === '3D' ? `[data-scene-atom-id="${id}"]` : `#atomLayer .atom-node[data-id="${id}"]`);
+  const drop = async (sourceId, targetId) => {
+    const source = await atomControl(sourceId).boundingBox();
+    const target = await atomControl(targetId).boundingBox();
+    assert.ok(source && target);
+    await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 12 });
+    await page.mouse.up();
+  };
+  await drop(hydrogens[0].id, oxygen.id);
+  const oneBond = await graph();
+  assert.equal(oneBond.bonds.length, 1, `${renderer}: dropping an atom body creates the requested bond.`);
+  assert.deepEqual(oneBond.atoms, loose.atoms, 'Bond drops retain separated atoms and exact coordinates.');
+  await drop(hydrogens[1].id, oxygen.id);
+  assert.equal(await page.locator('#discoveryCard').getAttribute('data-recognized'), 'H2O');
+  const completed = await graph();
+  await drop(hydrogens[0].id, oxygen.id);
+  assert.deepEqual(await graph(), completed, 'Dropping an already bonded pair must not overlap the spheres or consume history.');
+  await page.locator('#undoBtn').click();
+  assert.deepEqual(await graph(), oneBond, 'One Undo reverses exactly one bond drop.');
+  await drop(hydrogens[1].id, oxygen.id);
+  await paletteAtom('H');
+  const overfilledAttempt = await graph();
+  await page.locator('#workspace').scrollIntoViewIfNeeded();
+  await drop(overfilledAttempt.atoms.at(-1).id, oxygen.id);
+  assert.deepEqual(await graph(), overfilledAttempt, 'A blocked drop restores coordinates and leaves every atom and bond unchanged.');
+  await page.locator('#discoveryAttachToggle').check();
+}
+
 try {
   const context = await browser.newContext({ viewport: { width: 1460, height: 1050 } });
   page = await context.newPage();
@@ -116,6 +179,12 @@ try {
   await page.locator('#sceneLayer canvas').waitFor({ state: 'visible' });
   assert.equal((await graph()).atoms.length, 0, 'The student starts with an empty canvas, not a prebuilt answer.');
   assert.equal(await page.locator('#discoveryAttachToggle').isChecked(), true);
+  await verifyWaterConnections('3D');
+  await page.locator('#sceneFallbackBtn').click();
+  await verifyWaterConnections('2D');
+  await page.locator('#sceneFallbackBtn').click();
+  await page.locator('#sceneLayer canvas').waitFor({ state: 'visible' });
+  await page.locator('#discoveryGoalSelect').selectOption('ethanol');
   await page.locator('#discoveryStartBtn').click();
 
   // C → C; add three H to the first C, two to the second C, then O and H.

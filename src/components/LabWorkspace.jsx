@@ -11,7 +11,7 @@ function ElementLibrary() {
         <span className="rail-chevron" aria-hidden="true">⌄</span>
       </summary>
       <div className="panel-body">
-        <p className="rail-intro">Choose an atom, then make it yours.</p>
+        <p className="rail-intro">Click to add or attach to the selected atom. Drag onto an atom to connect.</p>
         <label className="mp-sr-only" htmlFor="elementSearch">Search elements</label>
         <input className="search-input" id="elementSearch" type="search" placeholder="Find an element…" autoComplete="off" />
         <div className="atom-grid" id="atomPalette" />
@@ -60,7 +60,7 @@ function MolecularBuilder() {
         <div className="canvas-hud" aria-hidden="true"><span><i /> Live graph</span><small>You control every edit</small></div>
         <div className="scene-controls" role="group" aria-label="Molecular view controls">
           <div className="scene-mode-switch">
-            <button className="active" data-scene-mode="edit" type="button" aria-pressed="true" title="Move atoms and connect bonding sockets">Edit</button>
+            <button className="active" data-scene-mode="edit" type="button" aria-pressed="true" title="Drop an atom onto another to make a bond, or drag into empty space to move">Build</button>
             <button data-scene-mode="orbit" type="button" aria-pressed="false" title="Drag the scene to rotate the camera">Rotate</button>
           </div>
           <button id="sceneResetBtn" type="button" title="Reset the camera without changing any atom or bond" aria-label="Reset camera view">↺</button>
@@ -69,7 +69,7 @@ function MolecularBuilder() {
         <svg id="bondLayer" aria-hidden="true" />
         <div id="atomLayer" />
         <p className="scene-model-caption">SCHEMATIC GEOMETRY · ILLUSTRATIVE MOTION</p>
-        <p id="sceneStatus" className="scene-view-status" role="status">Drag atoms to move · choose a socket to connect</p>
+        <p id="sceneStatus" className="scene-view-status" role="status">Drop one atom onto another to connect</p>
         <div className="bond-guide bond-guide-overlay" id="bondGuide" aria-live="polite">
           <div className="guide-icon" id="guideIcon">1</div>
           <div className="guide-copy"><strong id="guideTitle">Add or select an atom</strong><span id="guideDetail">Choose a green socket, then another atom to make a bond.</span></div>

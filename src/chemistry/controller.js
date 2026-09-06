@@ -78,12 +78,20 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
     clearGuide(); render();
   }
 
-  function finishSceneMove(id, cancelled = false) {
+  function finishSceneMove(id, cancelled = false, targetId = null) {
     const drag = sceneDrag;
     sceneDrag = null;
     if (!drag || drag.id !== id) return;
     const atom = getAtom(id);
     if (!atom) return;
+    if (!cancelled && targetId != null && targetId !== id) {
+      // A drop is one bond request. Keep both spheres separated and make Undo
+      // restore the exact graph from before the drag, including coordinates.
+      atom.x = drag.x; atom.y = drag.y;
+      if (getBond(id, targetId)) { setGuide('Already connected', 'These atoms already share a bond. Select the bond to inspect or change it.', 'info'); render(); return; }
+      connectAtoms(id, targetId);
+      return;
+    }
     if (cancelled) { atom.x = drag.x; atom.y = drag.y; }
     else if (atom.x !== drag.x || atom.y !== drag.y) pushHistory(drag.before);
     state.selectedAtomId = id; state.selectedBondKey = null;
@@ -127,6 +135,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
       sceneHost.hidden = false;
       moleculeScene = createMoleculeScene(sceneHost, {
         selectAtom, selectBond, beginBond: beginBondFromAtom, connectAtoms, clearSelection,
+        canConnect: (a, b) => !getBond(a, b) && resolveBondRequest(a, b).ok,
         moveStart(id) {
           const atom = getAtom(id);
           if (atom) sceneDrag = { id, x: atom.x, y: atom.y, before: snapshot() };
@@ -144,7 +153,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
         error() { fallbackScene('3D interrupted · 2D editing ready'); },
       });
       moleculeScene.setMode(sceneMode);
-      showSceneMode(true, '3D drawing · drag atoms to explore');
+      showSceneMode(true, 'Drop one atom onto another to connect · drag empty space to rotate');
       updateScene(currentValidation());
     } catch (_) {
       fallbackScene('3D unavailable · 2D editing ready');
@@ -390,13 +399,17 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
     });
     state.bonds.push({ a: source.id, b: atom.id, type: state.bondType, order: E.BOND_TYPES[state.bondType].order });
     state.pendingBondAtomId = null; state.bondDrag = null; state.selectedBondKey = null;
-    // Keep the chosen source selected so three Attach H clicks add exactly
-    // three explicit hydrogens to that carbon, each with its own Undo entry.
+    // Keep building from the source while it has space. For H → O → H,
+    // move selection to the new oxygen once the first hydrogen is full.
     state.selectedAtomId = source.id;
+    const nextValidation = currentValidation();
+    const sourceState = nextValidation.atomStates.find(item => item.atomId === source.id);
+    const newState = nextValidation.atomStates.find(item => item.atomId === atom.id);
+    if (!availableInteractionSites(source, sourceState) && availableInteractionSites(atom, newState)) state.selectedAtomId = atom.id;
     discoveryCoach?.setSource('manual');
     sceneGraphRevision++;
     sceneFeedback('bond', source.id, atom.id);
-    setGuide(`${symbol} attached to ${source.symbol}`, `One atom and one ${bondLabel(state.bondType).toLowerCase()} bond were added. ${source.symbol} remains selected.`, 'ready');
+    setGuide(`${symbol} attached to ${source.symbol}`, `One atom and one ${bondLabel(state.bondType).toLowerCase()} bond were added. ${getAtom(state.selectedAtomId).symbol} is selected for the next atom.`, 'ready');
     recordActivity('bond', `Attached ${symbol} to ${source.symbol}`, 'One selected atom and its requested bond were added. No other atom was filled in or repositioned.', 'Learner action');
     render();
   }
@@ -615,9 +628,28 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
 
   function enableAtomDrag(node,cluster,atom) {
     let dragging=false,moved=false,startX=0,startY=0,originX=0,originY=0,historySnapshot='';
-    node.addEventListener('pointerdown',ev=>{dragging=true;moved=false;startX=ev.clientX;startY=ev.clientY;originX=atom.x;originY=atom.y;historySnapshot=snapshot();node.setPointerCapture(ev.pointerId);});
-    node.addEventListener('pointermove',ev=>{if(!dragging)return;const dx=ev.clientX-startX,dy=ev.clientY-startY;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;const rect=workspace.getBoundingClientRect();atom.x=Math.max(58,Math.min(rect.width-58,originX+dx));atom.y=Math.max(58,Math.min(rect.height-58,originY+dy));cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;renderBonds();});
-    node.addEventListener('pointerup',ev=>{if(!dragging)return;dragging=false;try{node.releasePointerCapture(ev.pointerId);}catch(_){}if(moved){node._dragged=true;setTimeout(()=>{node._dragged=false;},0);pushHistory(historySnapshot);state.pendingBondAtomId=null;state.bondDrag=null;state.selectedAtomId=atom.id;state.selectedBondKey=null;clearGuide();render();}});
+    node.addEventListener('pointerdown',ev=>{if(ev.button!==0)return;dragging=true;moved=false;startX=ev.clientX;startY=ev.clientY;originX=atom.x;originY=atom.y;historySnapshot=snapshot();node.setPointerCapture(ev.pointerId);});
+    node.addEventListener('pointermove',ev=>{if(!dragging)return;const dx=ev.clientX-startX,dy=ev.clientY-startY;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;if(!moved)return;ev.preventDefault();const rect=workspace.getBoundingClientRect();atom.x=Math.max(58,Math.min(rect.width-58,originX+dx));atom.y=Math.max(58,Math.min(rect.height-58,originY+dy));cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;clearBondHover();const target=diagramAtomAt(ev.clientX,ev.clientY,atom.id);if(target&& !getBond(atom.id,target.id)&&resolveBondRequest(atom.id,target.id).ok)atomLayer.querySelector(`[data-id="${target.id}"]`)?.classList.add('hover-target');renderBonds();});
+    const finish=(ev,cancelled=false)=>{
+      if(!dragging)return;dragging=false;clearBondHover();
+      const target=!cancelled&&moved?diagramAtomAt(ev.clientX,ev.clientY,atom.id):null;
+      try{node.releasePointerCapture(ev.pointerId);}catch(_){}
+      if(cancelled){atom.x=originX;atom.y=originY;render();return;}
+      if(!moved)return;
+      node._dragged=true;setTimeout(()=>{node._dragged=false;},0);
+      if(target){atom.x=originX;atom.y=originY;if(getBond(atom.id,target.id)){setGuide('Already connected','These atoms already share a bond. Select the bond to inspect or change it.','info');render();return;}connectAtoms(atom.id,target.id);return;}
+      pushHistory(historySnapshot);state.pendingBondAtomId=null;state.bondDrag=null;state.selectedAtomId=atom.id;state.selectedBondKey=null;clearGuide();render();
+    };
+    node.addEventListener('pointerup',ev=>finish(ev));
+    node.addEventListener('pointercancel',ev=>finish(ev,true));
+    node.addEventListener('lostpointercapture',ev=>finish(ev,true));
+  }
+
+  function diagramAtomAt(clientX, clientY, excludeId = null) {
+    const rect = workspace.getBoundingClientRect();
+    return state.atoms.filter(atom => atom.id !== excludeId)
+      .map(atom => ({ atom, distance: Math.hypot(atom.x - (clientX - rect.left), atom.y - (clientY - rect.top)) }))
+      .filter(item => item.distance <= 42).sort((a,b) => a.distance-b.distance)[0]?.atom || null;
   }
 
   function svgLine(x1,y1,x2,y2,attrs={}) {
@@ -920,7 +952,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
       const e=E.ELEMENTS[symbol],btn=document.createElement('button');btn.className='atom-choice';btn.draggable=true;
       const symbolColor=['#dce4ed','#c9eaff','#d8f0ff'].includes(e.color)?'#506079':e.color;
       btn.innerHTML=`<span class="number">${e.atomicNumber}</span><span class="symbol" style="color:${symbolColor}">${symbol}</span><span class="name">${escapeHtml(e.name)}</span>`;
-      btn.title=`${e.name} · ${e.category}`;btn.addEventListener('click',()=>addAtom(symbol));btn.addEventListener('dragstart',ev=>ev.dataTransfer.setData('text/element',symbol));palette.appendChild(btn);
+      btn.title=`${e.name} · Click to add or attach; drag onto an atom to connect.`;btn.addEventListener('click',()=>addBuildElement(symbol,$('discoveryAttachToggle').checked));btn.addEventListener('dragstart',ev=>ev.dataTransfer.setData('text/element',symbol));palette.appendChild(btn);
     });
   }
 
@@ -1047,7 +1079,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   workspace.addEventListener('click',ev=>{if(ev.target.closest('.scene-controls, #sceneLayer'))return;clearSelection();});
   workspace.addEventListener('dragover',ev=>{ev.preventDefault();workspace.classList.add('dragover');});
   workspace.addEventListener('dragleave',()=>workspace.classList.remove('dragover'));
-  workspace.addEventListener('drop',ev=>{ev.preventDefault();workspace.classList.remove('dragover');const symbol=ev.dataTransfer.getData('text/element');if(!symbol)return;const rect=workspace.getBoundingClientRect();const point=moleculeScene?.screenToGraph(ev.clientX,ev.clientY);addAtom(symbol,point?.x??ev.clientX-rect.left,point?.y??ev.clientY-rect.top);});
+  workspace.addEventListener('drop',ev=>{ev.preventDefault();workspace.classList.remove('dragover');const symbol=ev.dataTransfer.getData('text/element');if(!symbol)return;const target=moleculeScene?moleculeScene.atomAt(ev.clientX,ev.clientY):diagramAtomAt(ev.clientX,ev.clientY);if(target){state.selectedAtomId=target.id;addBuildElement(symbol,true);return;}const rect=workspace.getBoundingClientRect();const point=moleculeScene?.screenToGraph(ev.clientX,ev.clientY);addAtom(symbol,point?.x??ev.clientX-rect.left,point?.y??ev.clientY-rect.top);});
   document.addEventListener('pointermove',onBondPointerMove,{passive:false});
   document.addEventListener('pointerup',ev=>finishBondDrag(ev,false));
   document.addEventListener('pointercancel',ev=>finishBondDrag(ev,true));
@@ -1081,7 +1113,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   document.querySelectorAll('[data-scene-mode]').forEach(button=>button.addEventListener('click',ev=>{
     ev.stopPropagation();sceneMode=button.dataset.sceneMode;
     moleculeScene?.setMode(sceneMode);
-    showSceneMode(Boolean(moleculeScene),sceneMode==='orbit'?'Rotate view · drag the scene':'3D drawing · drag atoms to explore');
+    showSceneMode(Boolean(moleculeScene),sceneMode==='orbit'?'Rotate view · drag the scene':'Drop one atom onto another to connect · drag empty space to rotate');
   }));
   $('sceneResetBtn').addEventListener('click',ev=>{ev.stopPropagation();moleculeScene?.fit();});
   $('sceneFallbackBtn').addEventListener('click',ev=>{ev.stopPropagation();if(wants3D)fallbackScene();else enableScene();});
