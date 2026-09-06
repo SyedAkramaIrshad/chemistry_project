@@ -238,7 +238,14 @@ export function analyzeDiscovery(graph, { engine, library, targetId = null }) {
     nextAction = action('connect', `Connect the highlighted ${a.symbol} and ${b.symbol} with a single bond to build ${target.skeleton}.`, { atomIds: [bond.a, bond.b] });
   } else if (inventory.some(item => item.symbol !== 'H' && item.missing)) {
     const missing = inventory.find(item => item.symbol !== 'H' && item.missing);
-    nextAction = action('add', `Add ${missing.current ? 'another' : missing.symbol === 'O' ? 'an' : 'a'} ${missing.symbol} atom to build the ${target.skeleton} skeleton.`, { symbol: missing.symbol });
+    const reverse = new Map([...(mapping?.mapping || [])].map(([actual, expected]) => [expected, actual]));
+    const absent = reference.atoms.filter(atom => atom.symbol === missing.symbol && !reverse.has(atom.id));
+    const nextId = Math.max(0, ...graph.atoms.map(atom => atom.id)) + 1;
+    const candidate = { id: nextId, symbol: missing.symbol, charge: 0 };
+    const sourceId = absent.flatMap(atom => incident(reference, atom.id).map(bond => reverse.get(otherEnd(bond, atom.id))))
+      .find(id => id != null && engine.canApplyBond([...graph.atoms, candidate], graph.bonds, id, nextId, 'single').ok);
+    const source = graph.atoms.find(atom => atom.id === sourceId);
+    nextAction = action('add', `Add ${missing.current ? 'another' : missing.symbol === 'O' ? 'an' : 'a'} ${missing.symbol} atom${source ? ` and connect it to the highlighted ${source.symbol}` : ''} to build the ${target.skeleton} skeleton.`, { symbol: missing.symbol, atomIds: source ? [sourceId] : [] });
   } else {
     const needsH = mapping?.hydrogenNeeds.find(item => item.attached < item.expected);
     const freeH = graph.atoms.find(atom => atom.symbol === 'H' && incident(graph, atom.id).length === 0);

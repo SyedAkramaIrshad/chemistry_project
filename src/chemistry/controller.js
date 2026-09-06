@@ -125,6 +125,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
     previous?.dispose();
     sceneEvent = null;
     showSceneMode(false, message);
+    render();
   }
 
   async function enableScene() {
@@ -502,6 +503,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
   }
 
   function beginBondFromAtom(id,ev=null) {
+    if(ev&&state.bondDrag)return false;
     const atom=getAtom(id);if(!atom)return false;
     const validation=currentValidation(),atomState=validation.atomStates.find(x=>x.atomId===id);
     const sites=availableInteractionSites(atom,atomState);state.selectedAtomId=id;state.selectedBondKey=null;
@@ -517,7 +519,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
       state.pendingBondAtomId=null;state.bondDrag=null;setGuide('No permitted site',message,'error');render();showToast(message,'error');return false;
     }
     clearGuide();state.pendingBondAtomId=id;
-    if(ev){ev.preventDefault();ev.stopPropagation();if(state.bondDrag)return false;const rect=workspace.getBoundingClientRect();state.bondDrag={pointerId:ev.pointerId,sourceId:id,x:ev.clientX-rect.left,y:ev.clientY-rect.top,startX:ev.clientX,startY:ev.clientY,moved:false};}
+    if(ev){ev.preventDefault();ev.stopPropagation();const rect=workspace.getBoundingClientRect();state.bondDrag={pointerId:ev.pointerId,sourceId:id,x:ev.clientX-rect.left,y:ev.clientY-rect.top,startX:ev.clientX,startY:ev.clientY,moved:false};}
     render();if(!ev)showToast(`Connecting from ${atom.symbol}. Click a green target.`);return true;
   }
 
@@ -914,7 +916,20 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
     const fallback=selected?document.querySelector(moleculeScene?`[data-scene-atom-id="${selected}"]`:`.atom-node[data-id="${selected}"]`):null;
     (key&&document.querySelector(key)||fallback||document.querySelector('[data-build-element="C"]'))?.focus({preventScroll:true});
   }
+  function fitDiagramToViewport(){
+    if(moleculeScene||!state.atoms.length)return false;
+    const width=workspace.clientWidth,height=workspace.clientHeight,pad=58;
+    if(width<=pad*2||height<=pad*2)return false;
+    const xs=state.atoms.map(a=>a.x),ys=state.atoms.map(a=>a.y);
+    const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+    if(minX>=pad&&maxX<=width-pad&&minY>=pad&&maxY<=height-pad)return false;
+    const scale=Math.min(1,(width-pad*2)/Math.max(1,maxX-minX),(height-pad*2)/Math.max(1,maxY-minY));
+    const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+    state.atoms.forEach(a=>{a.x=width/2+(a.x-cx)*scale;a.y=height/2+(a.y-cy)*scale;});
+    return true;
+  }
   function render() {
+    fitDiagramToViewport();
     const active=document.activeElement,focusSelector=focusKey(active);
     const validation=currentValidation(),identity=state.atoms.length?currentIdentity():null;
     discoveryCoach?.render();
@@ -1178,7 +1193,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
     else if(!editing&&(ev.key==='Delete'||ev.key==='Backspace')&&state.selectedAtomId){ev.preventDefault();removeAtom(state.selectedAtomId);}
   });
   window.addEventListener('blur',()=>{cancelDiagramDrag?.();if(state.bondDrag)finishBondDrag({pointerId:state.bondDrag.pointerId},true);});
-  window.addEventListener('resize',renderBonds);
+  window.addEventListener('resize',()=>{if(!moleculeScene&&fitDiagramToViewport())render();else renderBonds();});
   document.querySelectorAll('[data-scene-mode]').forEach(button=>button.addEventListener('click',ev=>{
     ev.stopPropagation();sceneMode=button.dataset.sceneMode;
     moleculeScene?.setMode(sceneMode);

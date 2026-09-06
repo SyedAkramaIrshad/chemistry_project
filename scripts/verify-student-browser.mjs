@@ -16,7 +16,7 @@ const screenshots = resolve('test-results', engineName);
 await mkdir(screenshots, { recursive: true });
 const browser = await engine.launch({ headless: true, ...(engineName === 'chromium' ? { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] } : {}) });
 const library = createDiscoveryLibrary(ChemistryLibrary);
-const errors = [], completed = [];
+const errors = [], completed = [], failures = [];
 let page;
 const draftKey = 'chemlab.playgroundDraft.v1', savedKey = 'chemlab.savedStructures.v2';
 const graph = () => page.evaluate(() => ({
@@ -34,10 +34,13 @@ async function connect(a,b) { await (await atom(a)).press('b'); await (await ato
 async function open(options={}, init) {
   const context=await browser.newContext({viewport:{width:1460,height:1000},reducedMotion:'reduce',...options});
   if(init) await context.addInitScript(init);
-  page=await context.newPage(); page.on('pageerror',e=>errors.push(e.message));
+  page=await context.newPage(); page.setDefaultTimeout(20000); page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`${baseURL}/#laboratory`); await ready(); return context;
 }
-async function check(name,fn) { await fn(); completed.push(name); console.log(`PASS ${engineName}: ${name}`); }
+async function check(name,fn) {
+  try { await fn(); completed.push(name); console.log(`PASS ${engineName}: ${name}`); }
+  catch(error) { failures.push({name,error:error.stack||String(error)}); console.error(`FAIL ${engineName}: ${name}\n${error.stack||error}`); if(page&&!page.isClosed())await page.screenshot({path:resolve(screenshots,`failure-${failures.length}.png`),fullPage:true}).catch(()=>{}); }
+}
 async function fits(width) { const d=await page.evaluate(()=>({width:document.documentElement.clientWidth,content:document.documentElement.scrollWidth})); assert.ok(d.content<=d.width+1,`${width}: ${JSON.stringify(d)}`); }
 
 try {
@@ -67,7 +70,7 @@ try {
     for(let i=0;i<3;i++) await add('H');
     const before=await graph(); assert.equal(before.atoms[0].id,first);
     await page.locator('#discoverySelectHint').click(); assert.deepEqual(await graph(),before);
-    assert.equal(await (await atom(second)).getAttribute('aria-pressed'),'true');
+    await (await atom(second)).locator('xpath=self::*[@aria-pressed="true"]').waitFor();
     const h=await add('H'); assert.ok((await graph()).bonds.some(b=>[b.a,b.b].includes(second)&&[b.a,b.b].includes(h)));
   });
   await check('refresh restores graph, goal, selection and Undo; Clear persists',async()=>{
@@ -117,7 +120,7 @@ try {
     await (await atom(h1)).press('Enter'); assert.equal((await graph()).bonds.length,1);
     await (await atom(o)).press('Enter'); assert.equal(await (await atom(o)).evaluate(n=>n===document.activeElement),true);
     await connect(o,h2); assert.equal(await identity(),'H2O');
-    const built=await graph(); await connect(h1,h2); assert.deepEqual(await graph(),built);
+    const built=await graph(); const looseH=await add('H'); const beforeReject=await graph(); await connect(looseH,h1); assert.deepEqual(await graph(),beforeReject); await page.locator('#undoBtn').click(); assert.deepEqual(await graph(),built);
     await page.keyboard.press('Escape');
     await page.locator('.builder-toolbar [data-bond-type="double"]').click();
     assert.equal(await page.locator('.builder-toolbar [data-bond-type="double"]').getAttribute('aria-pressed'),'true');
@@ -144,7 +147,7 @@ try {
     await page.locator('#discoveryGoalSelect').focus(); let found=false;
     for(let i=0;i<30;i++){await page.keyboard.press('Tab');if(await page.evaluate(()=>document.activeElement?.hasAttribute('data-build-element'))){found=true;break;}}
     assert.ok(found,'Quick atom controls must be in the real Tab sequence.');
-    for(const width of [742,390,320]){await page.setViewportSize({width,height:900});await fits(width);}
+    for(const width of [742,390,320]){await page.setViewportSize({width,height:900});await fits(width);await page.waitForFunction(()=>{const w=document.querySelector('#workspace');return [...document.querySelectorAll('#atomLayer .atom-cluster')].every(n=>{const x=parseFloat(n.style.left),y=parseFloat(n.style.top);return x>=57&&x<=w.clientWidth-57&&y>=57&&y<=w.clientHeight-57;});});}
     await page.setViewportSize({width:1280,height:1000});
     await page.evaluate(()=>document.documentElement.style.zoom='2'); await fits('200% CSS zoom');
     await page.screenshot({path:resolve(screenshots,'2d-zoom.png'),fullPage:true});
@@ -171,7 +174,8 @@ try {
     await water();assert.match(await page.locator('#draftStatus').innerText(),/unavailable|export|save/i);await page.locator('#saveStructureBtn').click();assert.equal(await identity(),'H2O');assert.equal(await page.locator('#exportMolBtn').isEnabled(),true);
   });await context.close();
   context=await open();
-  await check('malformed URL hash cannot crash the application',async()=>{await page.goto(`${baseURL}/#%`);await ready();await water();});await context.close();
+  await check('malformed URL hash cannot crash the application',async()=>{await page.goto(`${baseURL}/#%`);await page.reload();await ready();await water();});await context.close();
+  assert.deepEqual(failures,[],'Every student journey must pass');
   assert.deepEqual(errors,[],'No uncaught student-facing errors');
   console.log(JSON.stringify({browser:engineName,passed:completed.length,journeys:completed},null,2));
 } catch(error){
