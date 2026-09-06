@@ -82,6 +82,8 @@ async function connect(page, source, target, type = 'single') {
 }
 
 async function addElement(page, name, position) {
+  // These regression scenarios deliberately place independent atoms.
+  await page.locator('#discoveryAttachToggle').uncheck();
   await page.locator('#elementSearch').fill(name);
   const choice = page.locator('#atomPalette .atom-choice');
   assert.equal(await choice.count(), 1, `Search ${name} must resolve to one element.`);

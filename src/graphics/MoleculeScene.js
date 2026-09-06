@@ -157,9 +157,9 @@ export function createMoleculeScene(host, callbacks = {}) {
     return { x: point.x + center.x, y: center.y - point.y };
   }
 
-  function hitAt(clientX, clientY, onlyAtoms = false) {
+  function hitAt(clientX, clientY, onlyAtoms = false, excludeId = null) {
     rayFromScreen(clientX, clientY);
-    const meshes = [...atoms.values()].map(record => record.mesh);
+    const meshes = [...atoms.values()].filter(record => record.atom.id !== excludeId).map(record => record.mesh);
     if (!onlyAtoms) for (const record of bonds.values()) {
       if (record.group.visible) meshes.push(...record.group.children.filter(mesh => mesh.visible));
     }
@@ -604,6 +604,13 @@ export function createMoleculeScene(host, callbacks = {}) {
     else if (current.kind === 'atom' && current.moved) {
       const point = screenToGraph(event.clientX, event.clientY);
       if (point && current.graphStart) callbacks.moveAtom?.(current.id, current.origin.x + point.x - current.graphStart.x, current.origin.y + point.y - current.graphStart.y);
+      const target = hitAt(event.clientX, event.clientY, true, current.id);
+      for (const record of atoms.values()) {
+        const hovering = target?.id === record.atom.id;
+        const allowed = hovering && callbacks.canConnect?.(current.id, record.atom.id);
+        record.label.classList.toggle('is-drop-target', Boolean(allowed));
+        record.label.classList.toggle('is-drop-blocked', Boolean(hovering && !allowed));
+      }
     } else if (current.kind === 'orbit' && current.moved) {
       root.rotation.y = clamp(root.rotation.y + dx * 0.007, -1.15, 1.15);
       root.rotation.x = clamp(root.rotation.x + dy * 0.007, -1.1, 1.1);
@@ -615,14 +622,17 @@ export function createMoleculeScene(host, callbacks = {}) {
   function finishPointer(event, cancelled = false) {
     if (!gesture || gesture.pointerId !== event.pointerId) return;
     const current = gesture; gesture = null;
+    const dropTarget = !cancelled && current.kind === 'atom' && current.moved
+      ? hitAt(event.clientX, event.clientY, true, current.id) : null;
+    for (const record of atoms.values()) record.label.classList.remove('is-drop-target', 'is-drop-blocked');
     guide.visible = false; invalidate();
     try { current.target.releasePointerCapture(event.pointerId); } catch { /* The graph may have been reloaded. */ }
     if (current.moved || cancelled) { suppressClickUntil = performance.now() + 100; suppressClickId = current.id; }
     if (current.kind === 'atom') {
-      if (current.moved) callbacks.moveEnd?.(current.id, cancelled);
+      if (current.moved) callbacks.moveEnd?.(current.id, cancelled, dropTarget?.id ?? null);
       else if (!cancelled && (current.target === canvas || current.target === host)) callbacks.selectAtom?.(current.id);
     } else if (current.kind === 'socket' && !cancelled && current.moved) {
-      const hit = hitAt(event.clientX, event.clientY, true);
+      const hit = hitAt(event.clientX, event.clientY, true, current.id);
       if (hit?.kind === 'atom' && hit.id !== current.id) callbacks.connectAtoms?.(current.id, hit.id);
       else callbacks.clearSelection?.();
     } else if (current.kind === 'socket' && cancelled) callbacks.clearSelection?.();
@@ -696,5 +706,5 @@ export function createMoleculeScene(host, callbacks = {}) {
     keyLight.shadow.map?.dispose(); renderer.dispose(); renderer.forceContextLoss();
     canvas.remove(); labelLayer.remove(); announcer.remove(); host.dataset.status = 'disposed';
   }
-  return { update, setMode, fit, dispose, screenToGraph };
+  return { update, setMode, fit, dispose, screenToGraph, atomAt: (x, y) => hitAt(x, y, true) };
 }

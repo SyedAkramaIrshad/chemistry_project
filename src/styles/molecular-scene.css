@@ -14,6 +14,8 @@
 .scene-atom-button { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0; transform: translate(-50%,-50%); border: 2px solid transparent; border-radius: 50%; color: #fff; background: transparent; user-select: none; cursor: grab; }
 .scene-atom-button:hover { background: #ffffff0a; }
 .scene-atom-button:active { cursor: grabbing; }
+.scene-atom-label.is-drop-target .scene-atom-button { border-color: #7ff0c8; box-shadow: 0 0 0 8px #7ff0c833, 0 0 28px #7ff0c880; }
+.scene-atom-label.is-drop-blocked .scene-atom-button { border-color: #f39fae; box-shadow: 0 0 0 7px #f39fae22; }
 .molecule-playground .scene-atom-button:focus-visible { outline: 3px solid #b2f8f1; outline-offset: 7px; background: #ffffff0b; }
 .scene-symbol { position: relative; z-index: 1; font: 600 clamp(18px,calc(var(--scene-diameter,64px) * .32),38px)/1 "Avenir Next",system-ui,sans-serif; letter-spacing: -.035em; text-shadow: 0 1px 4px #14243366; pointer-events: none; }
 .scene-atom-label[data-light="true"] .scene-symbol { color: #123445; text-shadow: 0 1px 1px #ffffff77; }
