@@ -6,3 +6,5 @@ dist/
 # Local repository-history backups; the actual history is restored into .git.
 chemlab-studio.bundle
 chemlab-studio-git-history.zip
+test-results/
+playwright-report/
