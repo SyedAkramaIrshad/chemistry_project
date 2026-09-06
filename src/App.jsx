@@ -115,12 +115,24 @@ export default function App() {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(scrollToHash);
     };
+    const stopAutomaticAlignment = () => {
+      cancelAnimationFrame(frame);
+      disconnectWatchers();
+    };
     scheduleScroll();
     window.addEventListener('hashchange', scheduleScroll);
+    // Initial/lazy-route alignment must yield once a student starts working.
+    // Otherwise every graph mutation can scroll a bond away from their pointer.
+    window.addEventListener('pointerdown', stopAutomaticAlignment, true);
+    window.addEventListener('keydown', stopAutomaticAlignment, true);
+    window.addEventListener('wheel', stopAutomaticAlignment, { passive: true, capture: true });
     return () => {
       cancelAnimationFrame(frame);
       disconnectWatchers();
       window.removeEventListener('hashchange', scheduleScroll);
+      window.removeEventListener('pointerdown', stopAutomaticAlignment, true);
+      window.removeEventListener('keydown', stopAutomaticAlignment, true);
+      window.removeEventListener('wheel', stopAutomaticAlignment, true);
     };
   }, []);
 

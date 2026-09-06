@@ -165,6 +165,8 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
     } finally { sceneLoading = null; }
   }
 
+  const scrollMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth';
+
   function escapeHtml(value) {
     return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
   }
@@ -905,7 +907,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
     };
     loadGraph(graph,'Bond rewrite challenge loaded.');
     recordActivity('setup','Challenge loaded','Water and nitrogen begin as separate species. No bond has been changed automatically.','Experiment start');
-    $('laboratory').scrollIntoView({behavior:'smooth',block:'start'});
+    $('laboratory').scrollIntoView({behavior:scrollMotion(),block:'start'});
   }
 
   function focusKey(active) {
@@ -985,7 +987,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
   function loadPreset(key,scroll=true,notify=true) {
     const m=L.MOLECULES[key];if(!m)return;
     loadGraph(m,`${m.name} loaded.`,notify);
-    if(scroll)$('laboratory').scrollIntoView({behavior:'smooth',block:'start'});
+    if(scroll)$('laboratory').scrollIntoView({behavior:scrollMotion(),block:'start'});
   }
 
   function buildPalette(filter='') {
@@ -1079,7 +1081,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
     const canvasFormula=identity.molecule?.formula||validation.formula;
     const canvasName=identity.molecule?.name||(elementalSingle?E.ELEMENTS[state.atoms[0].symbol].name:identity.name);
     addReactant(canvasFormula,canvasName,'canvas');
-    $('reactionLab').scrollIntoView({behavior:'smooth',block:'start'});
+    $('reactionLab').scrollIntoView({behavior:scrollMotion(),block:'start'});
   }
 
   function renderReactants(){
@@ -1175,7 +1177,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
   $('runReactionBtn').addEventListener('click',runReaction);$('resetReactionBtn').addEventListener('click',resetReaction);$('balanceBtn').addEventListener('click',balanceCustom);
   document.querySelectorAll('[data-equation]').forEach(btn=>btn.addEventListener('click',()=>{$('equationInput').value=btn.dataset.equation;balanceCustom();}));
   $('howBtn').addEventListener('click',()=>openModal('howModal'));$('testsBtn').addEventListener('click',runTests);
-  ['jumpBtn','heroStartBtn'].forEach(id=>$(id).addEventListener('click',()=>$('laboratory').scrollIntoView({behavior:'smooth',block:'start'})));
+  ['jumpBtn','heroStartBtn'].forEach(id=>$(id).addEventListener('click',()=>$('laboratory').scrollIntoView({behavior:scrollMotion(),block:'start'})));
   document.querySelectorAll('[data-close-modal]').forEach(btn=>btn.addEventListener('click',()=>closeModal($(btn.dataset.closeModal))));
   document.querySelectorAll('.modal-backdrop').forEach(modal=>modal.addEventListener('click',ev=>{if(ev.target===modal)closeModal(modal);}));
   document.addEventListener('keydown',ev=>{
@@ -1215,7 +1217,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
       state.mission.active = false; state.bondType = 'single';
       document.querySelectorAll('.builder-toolbar [data-bond-type]').forEach(button => button.classList.toggle('active', button.dataset.bondType === 'single'));
       clearWorkspace();
-      $('workspace').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      $('workspace').scrollIntoView({ behavior: scrollMotion(), block: 'center' });
     },
     loadReference(molecule) { state.mission.active = false; loadGraph(molecule, `${molecule.name} reference loaded.`); },
     refresh: render,

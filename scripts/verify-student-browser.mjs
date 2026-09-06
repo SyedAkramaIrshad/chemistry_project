@@ -65,6 +65,12 @@ try {
     const before=await graph(); await page.locator('[data-build-element="H"]').click(); assert.deepEqual(await graph(),before);
     await page.locator('#undoBtn').click(); assert.equal((await graph()).atoms.length,2);
   });
+  await check('student edits do not trigger an automatic page scroll',async()=>{
+    await water();await page.locator('#workspace').scrollIntoViewIfNeeded();
+    const before=await page.evaluate(()=>window.scrollY),o=(await graph()).atoms.find(a=>a.symbol==='O');
+    await select(o.id);await page.waitForTimeout(450); // Covers the previous 350ms alignment timer.
+    assert.ok(Math.abs(await page.evaluate(()=>window.scrollY)-before)<=1,'Selection must not scroll the canvas away.');
+  });
   await check('hint button selects the next carbon without editing',async()=>{
     await start('ethanol'); const first=await add('C'),second=await add('C');
     for(let i=0;i<3;i++) await add('H');
