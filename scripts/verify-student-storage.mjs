@@ -1,3 +1,4 @@
+import { viewFromHash, VIEW_IDS } from '../src/viewRouting.js';
 import assert from 'node:assert/strict';
 import { ChemistryEngine as engine, ChemistryLibrary as library } from '../src/chemistry/runtime.js';
 import { readGraph, readSnapshot, readSavedStructures, readDraft, serializeDraft, MAX_ATOMS } from '../src/chemistry/playgroundStorage.js';
@@ -48,3 +49,7 @@ const largeDraft=serializeDraft({version:1,current:large,history:Array(70).fill(
 assert.ok(largeDraft.length<=2_000_000);assert.ok(readDraft(largeDraft,engine));
 assert.equal(readSavedStructures(JSON.stringify([{...saved,source:'reference'}]),engine)[0].source,'reference');
 console.log('Student storage passed: all visible presets, malformed data, bounded input, open graphs, selection/history recovery, and provenance.');
+
+for (const id of VIEW_IDS) assert.equal(viewFromHash(`#${id}`), id);
+for (const hash of ["", "#%", "#unknown"]) assert.equal(viewFromHash(hash), "laboratory");
+assert.equal(viewFromHash("#%63urriculum"), "curriculum");

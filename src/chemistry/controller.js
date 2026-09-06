@@ -1,3 +1,4 @@
+import { viewFromHash } from '../viewRouting.js';
 import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
 import { createDiscoveryLibrary } from './playgroundDiscovery.js';
 import { createDiscoveryCoach } from './discoveryCoach.js';
@@ -1185,7 +1186,7 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
       else if(ev.key==='Tab'){const controls=modalControls(modal);const first=controls[0],last=controls.at(-1);if(ev.shiftKey&&(document.activeElement===first||!modal.contains(document.activeElement))){ev.preventDefault();last?.focus();}else if(!ev.shiftKey&&(document.activeElement===last||!modal.contains(document.activeElement))){ev.preventDefault();first?.focus();}}
       return;
     }
-    if($('laboratory').closest('[hidden]'))return;
+    if(viewFromHash()!=='laboratory'||$('laboratory').closest('[hidden]'))return;
     // Navigation can receive a key before React finishes switching views.
     // Playground shortcuts belong to its controls, never a focused nav link
     // or a control in another lab, even during that transition.

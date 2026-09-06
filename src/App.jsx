@@ -1,3 +1,4 @@
+import { viewFromHash } from './viewRouting.js';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import Header from './components/Header.jsx';
 import Hero from './components/Hero.jsx';
@@ -43,23 +44,6 @@ function LabFallback({ id, label }) {
   return <section className="lab-loading" id={id} aria-live="polite"><i/><span>Preparing interactive workbench</span><strong>{label}</strong></section>;
 }
 
-const VIEW_IDS = new Set([
-  'top', 'curriculum', 'atomicStructureLab', 'nuclearChemistryLab', 'laboratory',
-  'molecularGeometryLab', 'molecularOrbitalLab', 'intermolecularLab', 'stoichiometryLab',
-  'solutionLab', 'chemicalEquilibriumLab', 'energyLab', 'thermochemistryLab',
-  'solubilityLab', 'electrochemistryLab', 'gasPhaseLab', 'binaryVleLab',
-  'nonidealThermodynamicsLab', 'spectroscopyLab', 'infraredEvidenceLab',
-  'orthogonalEvidenceLab', 'measurementEvidenceLab', 'chromatographyLab',
-  'functionalGroupLab', 'biomoleculeLab', 'enzymeLab', 'mechanismLab',
-  'stereochemistryLab', 'stereochemicalReactionLab', 'coordinationLab', 'crystalLab',
-  'electronicBandLab', 'polymerPopulationLab', 'reactionLab', 'balanceLab',
-]);
-
-const viewFromHash = () => {
-  let requested;
-  try { requested = decodeURIComponent(window.location.hash.slice(1)); } catch { return 'laboratory'; }
-  return VIEW_IDS.has(requested) ? requested : 'laboratory';
-};
 
 function AppView({ id, activeView, children }) {
   const active = activeView === id;
