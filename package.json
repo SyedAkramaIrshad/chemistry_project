@@ -43,7 +43,10 @@
     "verify:electronic-bands": "node scripts/verify-electronic-bands.mjs",
     "verify:playground": "node scripts/verify-playground.mjs",
     "verify:discovery": "node scripts/verify-playground-discovery.mjs",
-    "verify:discovery-browser": "node scripts/verify-discovery-browser.mjs"
+    "verify:discovery-browser": "node scripts/verify-discovery-browser.mjs",
+    "verify:student-storage": "node scripts/verify-student-storage.mjs",
+    "verify:student-chemistry": "node scripts/verify-student-chemistry.mjs",
+    "verify:student-browser": "node scripts/verify-student-browser.mjs"
   },
   "dependencies": {
     "react": "19.2.8",

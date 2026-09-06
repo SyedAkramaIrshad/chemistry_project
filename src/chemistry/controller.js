@@ -1,6 +1,8 @@
+import { viewFromHash } from '../viewRouting.js';
 import { ATOMIC_ELEMENT_BY_SYMBOL } from '../data/atomicElements.js';
 import { createDiscoveryLibrary } from './playgroundDiscovery.js';
 import { createDiscoveryCoach } from './discoveryCoach.js';
+import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, readDraft, readSavedStructures, serializeDraft } from './playgroundStorage.js';
 
 (function () {
   'use strict';
@@ -35,6 +37,8 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   let sceneGraphRevision = 0;
   let sceneDrag = null;
   let discoveryCoach = null;
+  let lastDraft = '';
+  let cancelDiagramDrag = null;
 
   function sceneFeedback(kind, a, b) {
     sceneEvent = { id: ++sceneEventId, kind, a, b };
@@ -122,6 +126,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
     previous?.dispose();
     sceneEvent = null;
     showSceneMode(false, message);
+    render();
   }
 
   async function enableScene() {
@@ -160,6 +165,8 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
     } finally { sceneLoading = null; }
   }
 
+  const scrollMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth';
+
   function escapeHtml(value) {
     return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
   }
@@ -186,11 +193,11 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   }
 
   function snapshot() {
-    return JSON.stringify({atoms:state.atoms,bonds:state.bonds,nextId:state.nextId,discoverySource:discoveryCoach?.getSource()||'manual'});
+    return JSON.stringify({atoms:state.atoms,bonds:state.bonds,nextId:state.nextId,selectedAtomId:state.selectedAtomId,selectedBondKey:state.selectedBondKey,discoverySource:discoveryCoach?.getSource()||'manual'});
   }
   function pushHistory(data) {
     state.history.push(data);
-    if (state.history.length > 70) state.history.shift();
+    if (state.history.length > MAX_HISTORY) state.history.shift();
   }
   function saveHistory() { pushHistory(snapshot()); }
 
@@ -378,6 +385,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   }
 
   function addBuildElement(symbol, attach) {
+    if (state.atoms.length >= MAX_ATOMS) { showToast(`This canvas holds up to ${MAX_ATOMS} atoms. Save your structure or start a new one.`, 'error'); return; }
     const source = attach ? getAtom(state.selectedAtomId) : null;
     if (!source) { const point = freeAtomPosition(); addAtom(symbol, point.x, point.y); return; }
     if (!E.ELEMENTS[symbol]) return;
@@ -416,6 +424,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
 
   function addAtom(symbol,x,y,record=true) {
     if (!E.ELEMENTS[symbol]) return;
+    if (state.atoms.length >= MAX_ATOMS) { showToast(`This canvas holds up to ${MAX_ATOMS} atoms. Save your structure or start a new one.`, 'error'); return; }
     if (record) saveHistory();
     const rect = workspace.getBoundingClientRect();
     const position = freeAtomPosition();
@@ -497,6 +506,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   }
 
   function beginBondFromAtom(id,ev=null) {
+    if(ev&&state.bondDrag)return false;
     const atom=getAtom(id);if(!atom)return false;
     const validation=currentValidation(),atomState=validation.atomStates.find(x=>x.atomId===id);
     const sites=availableInteractionSites(atom,atomState);state.selectedAtomId=id;state.selectedBondKey=null;
@@ -512,7 +522,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
       state.pendingBondAtomId=null;state.bondDrag=null;setGuide('No permitted site',message,'error');render();showToast(message,'error');return false;
     }
     clearGuide();state.pendingBondAtomId=id;
-    if(ev){ev.preventDefault();ev.stopPropagation();const rect=workspace.getBoundingClientRect();state.bondDrag={sourceId:id,x:ev.clientX-rect.left,y:ev.clientY-rect.top,startX:ev.clientX,startY:ev.clientY,moved:false};}
+    if(ev){ev.preventDefault();ev.stopPropagation();const rect=workspace.getBoundingClientRect();state.bondDrag={pointerId:ev.pointerId,sourceId:id,x:ev.clientX-rect.left,y:ev.clientY-rect.top,startX:ev.clientX,startY:ev.clientY,moved:false};}
     render();if(!ev)showToast(`Connecting from ${atom.symbol}. Click a green target.`);return true;
   }
 
@@ -521,7 +531,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   }
 
   function onBondPointerMove(ev) {
-    if(!state.bondDrag)return;ev.preventDefault();
+    if(!state.bondDrag||ev.pointerId!==state.bondDrag.pointerId)return;ev.preventDefault();
     const rect=workspace.getBoundingClientRect(),drag=state.bondDrag;
     drag.x=Math.max(0,Math.min(rect.width,ev.clientX-rect.left));drag.y=Math.max(0,Math.min(rect.height,ev.clientY-rect.top));
     if(Math.abs(ev.clientX-drag.startX)+Math.abs(ev.clientY-drag.startY)>5)drag.moved=true;
@@ -532,7 +542,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   }
 
   function finishBondDrag(ev,cancelled=false) {
-    const drag=state.bondDrag;if(!drag)return;const sourceId=drag.sourceId;let targetId=null;
+    const drag=state.bondDrag;if(!drag||ev.pointerId!==drag.pointerId)return;const sourceId=drag.sourceId;let targetId=null;
     if(!cancelled){const hit=document.elementFromPoint(ev.clientX,ev.clientY);const cluster=hit?.closest?.('.atom-cluster');if(cluster)targetId=Number(cluster.dataset.id);}
     clearBondHover();state.bondDrag=null;
     if(targetId&&targetId!==sourceId){connectAtoms(sourceId,targetId);return;}
@@ -579,6 +589,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
       }
       const ring=document.createElement('span');ring.className='valence-ring';cluster.appendChild(ring);
       const node=document.createElement('button');node.className='atom-node';
+      node.type='button';node.setAttribute('aria-label',`${e.name} atom ${atom.id}. Select to inspect or press B to start a bond.`);node.setAttribute('aria-pressed',String(state.selectedAtomId===atom.id));
       if(atomState?.state==='invalid')node.classList.add('invalid');else if(atomState?.state==='open')node.classList.add('open');
       node.style.background=e.color;node.style.color=e.text;node.dataset.id=atom.id;
       node.innerHTML=`<span>${escapeHtml(atom.symbol)}</span>${atom.charge?`<span class="atom-charge">${displayCharge(atom.charge)}</span>`:''}`;
@@ -589,6 +600,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
       else node.title=`${e.name}: no permitted interaction in the selected mode. Select the atom to inspect or delete it.`;
       node.addEventListener('click',ev=>{ev.stopPropagation();if(node._dragged)return;selectAtom(atom.id);});
       node.addEventListener('dblclick',ev=>{ev.stopPropagation();removeAtom(atom.id);});
+      node.addEventListener('keydown',ev=>{if(ev.key.toLowerCase()==='b'){ev.preventDefault();ev.stopPropagation();beginBondFromAtom(atom.id);}});
       enableAtomDrag(node,cluster,atom);cluster.appendChild(node);
 
       const sideOrder=preferredSideOrder(atom),handleSides=sideOrder.slice(0,interactionSites);
@@ -612,12 +624,13 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
         const ionicVisual=state.bondType==='ionic'||e.metal||(Number(atom.charge||0)<0&&covalentSites===0);
         if(ionicVisual)handle.classList.add('ionic');
         handle.type='button';handle.setAttribute('aria-label',`Start permitted interaction from ${e.name}, site ${index+1}`);
+        handle.dataset.atomId=String(atom.id);handle.dataset.site=String(index);
         if(e.metal)handle.title='Drag to a compatible nonmetal. Strict mode permits ionic interactions only for generic metal atoms.';
         else if(state.bondType==='auto')handle.title='Drag to another atom; Auto mode chooses only a rule-supported interaction.';
         else handle.title=`Drag to attempt a ${bondLabel(state.bondType).toLowerCase()}.`;
         positionAroundAtom(handle,side,0,47);
         handle.addEventListener('pointerdown',ev=>beginBondFromAtom(atom.id,ev));
-        handle.addEventListener('click',ev=>ev.stopPropagation());cluster.appendChild(handle);
+        handle.addEventListener('click',ev=>{ev.stopPropagation();if(ev.detail===0)beginBondFromAtom(atom.id);});cluster.appendChild(handle);
       });
       if(e.category==='noble gas'){
         const badge=document.createElement('span');badge.className='closed-shell-badge';badge.textContent=atom.symbol==='He'?'2 e⁻ · full shell':'8 e⁻ · full shell';cluster.appendChild(badge);
@@ -627,11 +640,11 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   }
 
   function enableAtomDrag(node,cluster,atom) {
-    let dragging=false,moved=false,startX=0,startY=0,originX=0,originY=0,historySnapshot='';
-    node.addEventListener('pointerdown',ev=>{if(ev.button!==0)return;dragging=true;moved=false;startX=ev.clientX;startY=ev.clientY;originX=atom.x;originY=atom.y;historySnapshot=snapshot();node.setPointerCapture(ev.pointerId);});
-    node.addEventListener('pointermove',ev=>{if(!dragging)return;const dx=ev.clientX-startX,dy=ev.clientY-startY;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;if(!moved)return;ev.preventDefault();const rect=workspace.getBoundingClientRect();atom.x=Math.max(58,Math.min(rect.width-58,originX+dx));atom.y=Math.max(58,Math.min(rect.height-58,originY+dy));cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;clearBondHover();const target=diagramAtomAt(ev.clientX,ev.clientY,atom.id);if(target&& !getBond(atom.id,target.id)&&resolveBondRequest(atom.id,target.id).ok)atomLayer.querySelector(`[data-id="${target.id}"]`)?.classList.add('hover-target');renderBonds();});
+    let dragging=false,moved=false,startX=0,startY=0,originX=0,originY=0,historySnapshot='',pointerId=null;
+    node.addEventListener('pointerdown',ev=>{if(ev.button!==0||cancelDiagramDrag)return;dragging=true;moved=false;pointerId=ev.pointerId;startX=ev.clientX;startY=ev.clientY;originX=atom.x;originY=atom.y;historySnapshot=snapshot();cancelDiagramDrag=()=>finish({pointerId},true);node.setPointerCapture(ev.pointerId);});
+    node.addEventListener('pointermove',ev=>{if(!dragging||ev.pointerId!==pointerId)return;const dx=ev.clientX-startX,dy=ev.clientY-startY;if(Math.abs(dx)+Math.abs(dy)>4)moved=true;if(!moved)return;ev.preventDefault();const rect=workspace.getBoundingClientRect();atom.x=Math.max(58,Math.min(rect.width-58,originX+dx));atom.y=Math.max(58,Math.min(rect.height-58,originY+dy));cluster.style.left=`${atom.x}px`;cluster.style.top=`${atom.y}px`;clearBondHover();const target=diagramAtomAt(ev.clientX,ev.clientY,atom.id);if(target&& !getBond(atom.id,target.id)&&resolveBondRequest(atom.id,target.id).ok)atomLayer.querySelector(`[data-id="${target.id}"]`)?.classList.add('hover-target');renderBonds();});
     const finish=(ev,cancelled=false)=>{
-      if(!dragging)return;dragging=false;clearBondHover();
+      if(!dragging||ev.pointerId!==pointerId)return;dragging=false;cancelDiagramDrag=null;clearBondHover();
       const target=!cancelled&&moved?diagramAtomAt(ev.clientX,ev.clientY,atom.id):null;
       try{node.releasePointerCapture(ev.pointerId);}catch(_){}
       if(cancelled){atom.x=originX;atom.y=originY;render();return;}
@@ -894,17 +907,44 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
     };
     loadGraph(graph,'Bond rewrite challenge loaded.');
     recordActivity('setup','Challenge loaded','Water and nitrogen begin as separate species. No bond has been changed automatically.','Experiment start');
-    $('laboratory').scrollIntoView({behavior:'smooth',block:'start'});
+    $('laboratory').scrollIntoView({behavior:scrollMotion(),block:'start'});
   }
 
+  function focusKey(active) {
+    return active?.id?`#${CSS.escape(active.id)}`:active?.matches('.atom-node')?`.atom-node[data-id="${active.dataset.id}"]`:active?.matches('.bond-handle')?`.bond-handle[data-atom-id="${active.dataset.atomId}"][data-site="${active.dataset.site}"]`:active?.matches('.bond-hit')?`.bond-hit[data-bond-key="${active.dataset.bondKey}"]`:active?.matches('[data-set-charge]')?`[data-set-charge="${active.dataset.setCharge}"]`:active?.matches('[data-saved-id]')?`[data-saved-id="${CSS.escape(active.dataset.savedId)}"][data-act="${active.dataset.act}"]`:null;
+  }
+  function restoreFocus(active,key){
+    if(!active||active.isConnected)return;
+    const selected=state.selectedAtomId;
+    const fallback=selected?document.querySelector(moleculeScene?`[data-scene-atom-id="${selected}"]`:`.atom-node[data-id="${selected}"]`):null;
+    (key&&document.querySelector(key)||fallback||document.querySelector('[data-build-element="C"]'))?.focus({preventScroll:true});
+  }
+  function fitDiagramToViewport(){
+    if(moleculeScene||!state.atoms.length)return false;
+    const width=workspace.clientWidth,height=workspace.clientHeight,pad=58;
+    if(width<=pad*2||height<=pad*2)return false;
+    const xs=state.atoms.map(a=>a.x),ys=state.atoms.map(a=>a.y);
+    const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+    if(minX>=pad&&maxX<=width-pad&&minY>=pad&&maxY<=height-pad)return false;
+    const scale=Math.min(1,(width-pad*2)/Math.max(1,maxX-minX),(height-pad*2)/Math.max(1,maxY-minY));
+    const cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+    state.atoms.forEach(a=>{a.x=width/2+(a.x-cx)*scale;a.y=height/2+(a.y-cy)*scale;});
+    return true;
+  }
   function render() {
+    fitDiagramToViewport();
+    const active=document.activeElement,focusSelector=focusKey(active);
     const validation=currentValidation(),identity=state.atoms.length?currentIdentity():null;
     discoveryCoach?.render();
     renderAtoms(validation);renderBonds();renderInspector(validation);renderValidation(validation);renderSummary(validation,identity);renderGuide(validation);renderSaved();renderMission(validation);renderActivity();
     updateScene(validation);
+    document.querySelectorAll('.builder-toolbar [data-bond-type]').forEach(button=>{const selected=button.dataset.bondType===state.bondType;button.classList.toggle('active',selected);button.setAttribute('aria-pressed',String(selected));});
+    restoreFocus(active,focusSelector);
+    persistDraft();
   }
 
   function clearWorkspace(record=true) {
+    cancelDiagramDrag?.();
     sceneDrag = null;
     sceneGraphRevision++;
     if(record&&state.atoms.length)saveHistory();state.atoms=[];state.bonds=[];state.selectedAtomId=null;state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
@@ -913,27 +953,33 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   }
 
   function undo() {
+    cancelDiagramDrag?.();
     sceneDrag = null;
-    const prev=state.history.pop();if(!prev){showToast('Nothing to undo.');return;}const data=JSON.parse(prev);state.atoms=data.atoms;state.bonds=data.bonds;state.nextId=data.nextId;state.selectedAtomId=null;state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
+    const prev=state.history.pop();if(!prev){showToast('Nothing to undo.');return;}const data=readSnapshot(JSON.parse(prev),E);if(!data){showToast('This history entry could not be restored.','error');return;}state.atoms=data.atoms;state.bonds=data.bonds;state.nextId=data.nextId;state.selectedAtomId=data.selectedAtomId;state.selectedBondKey=data.selectedBondKey;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
     discoveryCoach?.setSource(data.discoverySource || 'manual');
     sceneGraphRevision++;
     recordActivity('undo','Previous graph restored','Undo restored atoms, bonds, and charges from the last manual snapshot.','History');render();
   }
 
   function centerMolecule(record=true) {
+    cancelDiagramDrag?.();
     sceneDrag = null;
     sceneGraphRevision++;
     if(!state.atoms.length)return;if(record)saveHistory();const rect=workspace.getBoundingClientRect();const minX=Math.min(...state.atoms.map(a=>a.x)),maxX=Math.max(...state.atoms.map(a=>a.x)),minY=Math.min(...state.atoms.map(a=>a.y)),maxY=Math.max(...state.atoms.map(a=>a.y));const dx=rect.width/2-(minX+maxX)/2,dy=rect.height/2-(minY+maxY)/2;
     state.atoms.forEach(a=>{a.x=Math.max(58,Math.min(rect.width-58,a.x+dx));a.y=Math.max(58,Math.min(rect.height-58,a.y+dy));});clearGuide();render();
   }
 
-  function loadGraph(graph,announce='Structure loaded.',notify=true) {
+  function loadGraph(graph,announce='Structure loaded.',notify=true,source='reference') {
+    const checked=readGraph(graph,E);
+    if(!checked){showToast('This saved structure is damaged. Your current molecule is unchanged.','error');return;}
+    cancelDiagramDrag?.();
+    graph=checked;
     sceneDrag = null;
     sceneGraphRevision++;
-    if(state.atoms.length)saveHistory();const rect=workspace.getBoundingClientRect(),sourceAtoms=graph.atoms.map(a=>({...a}));const minX=Math.min(...sourceAtoms.map(a=>a.x||0)),maxX=Math.max(...sourceAtoms.map(a=>a.x||0)),minY=Math.min(...sourceAtoms.map(a=>a.y||0)),maxY=Math.max(...sourceAtoms.map(a=>a.y||0));const sourceW=Math.max(100,maxX-minX),sourceH=Math.max(100,maxY-minY),scale=Math.min(1.18,(rect.width*.72)/sourceW,(rect.height*.72)/sourceH),idMap=new Map();state.atoms=[];state.bonds=[];
+    saveHistory();const rect=workspace.getBoundingClientRect(),sourceAtoms=graph.atoms.map(a=>({...a}));const minX=Math.min(...sourceAtoms.map(a=>a.x||0)),maxX=Math.max(...sourceAtoms.map(a=>a.x||0)),minY=Math.min(...sourceAtoms.map(a=>a.y||0)),maxY=Math.max(...sourceAtoms.map(a=>a.y||0));const sourceW=Math.max(100,maxX-minX),sourceH=Math.max(100,maxY-minY),scale=Math.min(1.18,(rect.width*.72)/sourceW,(rect.height*.72)/sourceH),idMap=new Map();state.atoms=[];state.bonds=[];
     sourceAtoms.forEach(a=>{const id=state.nextId++;idMap.set(a.id,id);state.atoms.push({id,symbol:a.symbol,charge:Number(a.charge||0),x:rect.width/2+(a.x-(minX+maxX)/2)*scale,y:rect.height/2+(a.y-(minY+maxY)/2)*scale});});
     graph.bonds.forEach(b=>state.bonds.push({a:idMap.get(b.a),b:idMap.get(b.b),type:b.type||'single',order:E.BOND_TYPES[b.type||'single']?.order??b.order??1}));state.selectedAtomId=null;state.selectedBondKey=null;state.pendingBondAtomId=null;state.bondDrag=null;clearGuide();
-    discoveryCoach?.setSource('reference');
+    discoveryCoach?.setSource(source);
     recordActivity('setup',announce.replace(/\.$/,''),'A known graph was loaded exactly as stored. No inference or automatic completion was applied.','Structure load');
     render();if(notify)showToast(announce,'good');
   }
@@ -941,7 +987,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   function loadPreset(key,scroll=true,notify=true) {
     const m=L.MOLECULES[key];if(!m)return;
     loadGraph(m,`${m.name} loaded.`,notify);
-    if(scroll)$('laboratory').scrollIntoView({behavior:'smooth',block:'start'});
+    if(scroll)$('laboratory').scrollIntoView({behavior:scrollMotion(),block:'start'});
   }
 
   function buildPalette(filter='') {
@@ -963,26 +1009,45 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
     });
   }
 
-  const STORAGE_KEY='chemlab.savedStructures.v2';
-  function readSaved(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch(_){return[];}}
-  function writeSaved(items){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(items));return true;}catch(_){showToast('Browser storage is unavailable in this context.','error');return false;}}
+  function readSaved(){try{return readSavedStructures(localStorage.getItem(SAVED_KEY),E);}catch(_){return[];}}
+  function writeSaved(items){try{localStorage.setItem(SAVED_KEY,JSON.stringify(items));return true;}catch(_){showToast('Browser storage is unavailable. You can keep building and export a MOL file.','error');return false;}}
+  function persistDraft(){
+    if(!discoveryCoach||sceneDrag||cancelDiagramDrag)return;
+    const draft=serializeDraft({version:1,current:JSON.parse(snapshot()),history:state.history,coach:discoveryCoach.getSession(),attach:$('discoveryAttachToggle').checked,bondType:state.bondType});
+    if(!draft){$('draftStatus').textContent='This draft is too large to recover on refresh. Export your work before leaving.';return;}
+    if(draft===lastDraft)return;
+    try{sessionStorage.setItem(DRAFT_KEY,draft);lastDraft=draft;$('draftStatus').textContent='Your work is remembered in this tab when you refresh.';}
+    catch{$('draftStatus').textContent='Refresh recovery is unavailable. Save or export your work before leaving.';}
+  }
+  function restoreDraft(){
+    try{
+      const draft=readDraft(sessionStorage.getItem(DRAFT_KEY),E);if(!draft)return;
+      Object.assign(state,draft.current,{history:draft.history,bondType:draft.bondType});
+      discoveryCoach.restoreSession(draft.coach);discoveryCoach.setSource(draft.current.discoverySource);
+      $('discoveryAttachToggle').checked=draft.attach;sceneGraphRevision++;
+      if(state.atoms.length)recordActivity('setup','Work restored','Your molecule and Undo history were recovered from this tab.','Refresh recovery');
+    }catch{ /* Storage may be disabled. The editor remains available. */ }
+  }
   function saveStructure(){
     if(!state.atoms.length){showToast('Build a structure first.');return;}
     const validation=currentValidation(),identity=currentIdentity();
     if(validation.status==='invalid'||validation.status==='unsupported'){showToast(validation.status==='invalid'?'Invalid structures cannot be saved as validated molecules.':'Outside-model structures cannot be saved as validated molecules.','error');return;}
     const items=readSaved();
-    items.unshift({id:Date.now(),name:identity.name,formula:identity.molecule?.formula||validation.formula,created:new Date().toISOString(),graph:{atoms:state.atoms,bonds:state.bonds}});
+    items.unshift({id:Date.now(),name:identity.name,formula:identity.molecule?.formula||validation.formula,created:new Date().toISOString(),source:discoveryCoach?.getSource()||'manual',graph:{atoms:state.atoms,bonds:state.bonds}});
     if(!writeSaved(items.slice(0,12)))return;renderSaved();showToast('Structure saved in this browser.','good');
   }
   function renderSaved(){
+    const active=document.activeElement,key=focusKey(active);
     const list=$('savedList');if(!list)return;const items=readSaved();list.innerHTML='';
-    if(!items.length){list.innerHTML='<p class="inspector-empty">No saved structures.</p>';return;}
+    if(!items.length){list.innerHTML='<p class="inspector-empty">No saved structures.</p>';if(active?.matches('[data-saved-id]'))$('clearSavedBtn').focus({preventScroll:true});return;}
     items.forEach(item=>{
       const row=document.createElement('div');row.className='saved-item';
       row.innerHTML=`<div><strong>${escapeHtml(item.name)}</strong><small>${formulaHtml(item.formula)}</small></div><div class="saved-actions"><button data-act="load">Load</button><button data-act="delete" style="color:var(--danger);background:#fff0f3">Delete</button></div>`;
-      row.querySelector('[data-act="load"]').addEventListener('click',()=>loadGraph(item.graph,`${item.name} loaded.`));
+      row.querySelectorAll('button').forEach(button=>{button.dataset.savedId=String(item.id);});
+      row.querySelector('[data-act="load"]').addEventListener('click',()=>loadGraph(item.graph,`${item.name} loaded.`,true,item.source));
       row.querySelector('[data-act="delete"]').addEventListener('click',()=>{if(writeSaved(items.filter(x=>x.id!==item.id)))renderSaved();});list.appendChild(row);
     });
+    if(active?.matches('[data-saved-id]')){if(!active.isConnected)(document.querySelector(key)||list.querySelector('button'))?.focus({preventScroll:true});}
   }
   function clearSaved(){if(writeSaved([])){renderSaved();showToast('Saved structures cleared.');}}
 
@@ -1016,7 +1081,7 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
     const canvasFormula=identity.molecule?.formula||validation.formula;
     const canvasName=identity.molecule?.name||(elementalSingle?E.ELEMENTS[state.atoms[0].symbol].name:identity.name);
     addReactant(canvasFormula,canvasName,'canvas');
-    $('reactionLab').scrollIntoView({behavior:'smooth',block:'start'});
+    $('reactionLab').scrollIntoView({behavior:scrollMotion(),block:'start'});
   }
 
   function renderReactants(){
@@ -1073,7 +1138,20 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
       const v=E.validateGraph(atoms,bonds),id=E.identifyGraph({atoms,bonds},L.MOLECULES);results.push({name:'Incorrect H–H–O is rejected as water',ok:v.status==='invalid'&&id.key!=='H2O',error:`status=${v.status}, identity=${id.key}`});
     }catch(error){results.push({name:'Incorrect H–H–O is rejected as water',ok:false,error:error.message});}
     const list=$('testList');list.innerHTML='';results.forEach(r=>{const item=document.createElement('div');item.className=`test-item ${r.ok?'ok':'fail'}`;item.innerHTML=`<span>${escapeHtml(r.name)}${r.ok?'':`<small style="display:block;color:var(--muted);margin-top:3px">${escapeHtml(r.error||'Failed')}</small>`}</span><strong>${r.ok?'PASS':'FAIL'}</strong>`;list.appendChild(item);});
-    $('testsModal').classList.add('show');
+    openModal('testsModal');
+  }
+
+  let modalTrigger=null;
+  const modalControls=modal=>[...modal.querySelectorAll('button, a[href], input, select, textarea, [tabindex="0"]')].filter(node=>!node.disabled&&node.getClientRects().length);
+  function openModal(id){
+    modalTrigger=document.activeElement;
+    const modal=$(id);modal.classList.add('show');
+    document.querySelector('.app-shell').inert=true;
+    modalControls(modal)[0]?.focus();
+  }
+  function closeModal(modal){
+    modal.classList.remove('show');document.querySelector('.app-shell').inert=false;
+    if(modalTrigger?.isConnected)modalTrigger.focus();modalTrigger=null;
   }
 
   workspace.addEventListener('click',ev=>{if(ev.target.closest('.scene-controls, #sceneLayer'))return;clearSelection();});
@@ -1098,18 +1176,31 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   $('formulaInput').addEventListener('keydown',ev=>{if(ev.key==='Enter')$('addFormulaBtn').click();});
   $('runReactionBtn').addEventListener('click',runReaction);$('resetReactionBtn').addEventListener('click',resetReaction);$('balanceBtn').addEventListener('click',balanceCustom);
   document.querySelectorAll('[data-equation]').forEach(btn=>btn.addEventListener('click',()=>{$('equationInput').value=btn.dataset.equation;balanceCustom();}));
-  $('howBtn').addEventListener('click',()=>$('howModal').classList.add('show'));$('testsBtn').addEventListener('click',runTests);
-  ['jumpBtn','heroStartBtn'].forEach(id=>$(id).addEventListener('click',()=>$('laboratory').scrollIntoView({behavior:'smooth',block:'start'})));
-  document.querySelectorAll('[data-close-modal]').forEach(btn=>btn.addEventListener('click',()=>$(btn.dataset.closeModal).classList.remove('show')));
-  document.querySelectorAll('.modal-backdrop').forEach(modal=>modal.addEventListener('click',ev=>{if(ev.target===modal)modal.classList.remove('show');}));
+  $('howBtn').addEventListener('click',()=>openModal('howModal'));$('testsBtn').addEventListener('click',runTests);
+  ['jumpBtn','heroStartBtn'].forEach(id=>$(id).addEventListener('click',()=>$('laboratory').scrollIntoView({behavior:scrollMotion(),block:'start'})));
+  document.querySelectorAll('[data-close-modal]').forEach(btn=>btn.addEventListener('click',()=>closeModal($(btn.dataset.closeModal))));
+  document.querySelectorAll('.modal-backdrop').forEach(modal=>modal.addEventListener('click',ev=>{if(ev.target===modal)closeModal(modal);}));
   document.addEventListener('keydown',ev=>{
-    const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);
-    if(ev.key==='Escape'){document.querySelectorAll('.modal-backdrop.show').forEach(m=>m.classList.remove('show'));if(state.pendingBondAtomId||state.bondDrag||state.selectedBondKey){state.pendingBondAtomId=null;state.bondDrag=null;state.selectedBondKey=null;clearGuide();render();}}
-    if(!editing&&(ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='z'){ev.preventDefault();undo();}
+    if(ev.defaultPrevented)return;
+    const modal=document.querySelector('.modal-backdrop.show');
+    if(modal){
+      if(ev.key==='Escape'){ev.preventDefault();closeModal(modal);}
+      else if(ev.key==='Tab'){const controls=modalControls(modal);const first=controls[0],last=controls.at(-1);if(ev.shiftKey&&(document.activeElement===first||!modal.contains(document.activeElement))){ev.preventDefault();last?.focus();}else if(!ev.shiftKey&&(document.activeElement===last||!modal.contains(document.activeElement))){ev.preventDefault();first?.focus();}}
+      return;
+    }
+    if(viewFromHash()!=='laboratory'||$('laboratory').closest('[hidden]'))return;
+    // Navigation can receive a key before React finishes switching views.
+    // Playground shortcuts belong to its controls, never a focused nav link
+    // or a control in another lab, even during that transition.
+    if(document.activeElement!==document.body&&!$('laboratory').contains(document.activeElement))return;
+    const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||document.activeElement?.isContentEditable;
+    if(ev.key==='Escape'){cancelDiagramDrag?.();if(state.pendingBondAtomId||state.bondDrag||state.selectedBondKey){state.pendingBondAtomId=null;state.bondDrag=null;state.selectedBondKey=null;clearGuide();render();}}
+    if(!editing&&!ev.shiftKey&&(ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='z'){ev.preventDefault();undo();}
     if(!editing&&(ev.key==='Delete'||ev.key==='Backspace')&&state.selectedBondKey){ev.preventDefault();breakSelectedBond();}
     else if(!editing&&(ev.key==='Delete'||ev.key==='Backspace')&&state.selectedAtomId){ev.preventDefault();removeAtom(state.selectedAtomId);}
   });
-  window.addEventListener('resize',renderBonds);
+  window.addEventListener('blur',()=>{cancelDiagramDrag?.();if(state.bondDrag)finishBondDrag({pointerId:state.bondDrag.pointerId},true);});
+  window.addEventListener('resize',()=>{if(!moleculeScene&&fitDiagramToViewport())render();else renderBonds();});
   document.querySelectorAll('[data-scene-mode]').forEach(button=>button.addEventListener('click',ev=>{
     ev.stopPropagation();sceneMode=button.dataset.sceneMode;
     moleculeScene?.setMode(sceneMode);
@@ -1121,17 +1212,19 @@ import { createDiscoveryCoach } from './discoveryCoach.js';
   discoveryCoach = createDiscoveryCoach({
     engine: E, library: discoveryLibrary, getGraph: currentGraph,
     getSelectedAtom: () => getAtom(state.selectedAtomId), getBondType: () => state.bondType,
-    addElement: addBuildElement,
+    addElement: addBuildElement, selectAtom,
     start() {
       state.mission.active = false; state.bondType = 'single';
       document.querySelectorAll('.builder-toolbar [data-bond-type]').forEach(button => button.classList.toggle('active', button.dataset.bondType === 'single'));
       clearWorkspace();
-      $('workspace').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      $('workspace').scrollIntoView({ behavior: scrollMotion(), block: 'center' });
     },
     loadReference(molecule) { state.mission.active = false; loadGraph(molecule, `${molecule.name} reference loaded.`); },
     refresh: render,
   });
-  buildPalette();buildPresets();buildQuickSpecies();renderReactants();render();
+  buildPalette();buildPresets();buildQuickSpecies();renderReactants();restoreDraft();render();
+  $('laboratory').inert=false;
+  $('laboratory').setAttribute('aria-busy','false');
   enableScene();
 })();
 

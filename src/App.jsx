@@ -1,3 +1,4 @@
+import { viewFromHash } from './viewRouting.js';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import Header from './components/Header.jsx';
 import Hero from './components/Hero.jsx';
@@ -43,22 +44,6 @@ function LabFallback({ id, label }) {
   return <section className="lab-loading" id={id} aria-live="polite"><i/><span>Preparing interactive workbench</span><strong>{label}</strong></section>;
 }
 
-const VIEW_IDS = new Set([
-  'top', 'curriculum', 'atomicStructureLab', 'nuclearChemistryLab', 'laboratory',
-  'molecularGeometryLab', 'molecularOrbitalLab', 'intermolecularLab', 'stoichiometryLab',
-  'solutionLab', 'chemicalEquilibriumLab', 'energyLab', 'thermochemistryLab',
-  'solubilityLab', 'electrochemistryLab', 'gasPhaseLab', 'binaryVleLab',
-  'nonidealThermodynamicsLab', 'spectroscopyLab', 'infraredEvidenceLab',
-  'orthogonalEvidenceLab', 'measurementEvidenceLab', 'chromatographyLab',
-  'functionalGroupLab', 'biomoleculeLab', 'enzymeLab', 'mechanismLab',
-  'stereochemistryLab', 'stereochemicalReactionLab', 'coordinationLab', 'crystalLab',
-  'electronicBandLab', 'polymerPopulationLab', 'reactionLab', 'balanceLab',
-]);
-
-const viewFromHash = () => {
-  const requested = decodeURIComponent(window.location.hash.slice(1));
-  return VIEW_IDS.has(requested) ? requested : 'laboratory';
-};
 
 function AppView({ id, activeView, children }) {
   const active = activeView === id;
@@ -93,15 +78,15 @@ export default function App() {
       settleTimer = 0;
     };
     const alignActiveHash = () => {
-      if (!activeId || window.location.hash.slice(1) !== activeId) return;
-      const target = document.getElementById(decodeURIComponent(activeId));
+      if (!activeId || viewFromHash() !== activeId) return;
+      const target = document.getElementById(activeId);
       if (!target) return;
       target.scrollIntoView({block:'start',behavior:'instant'});
       window.clearTimeout(settleTimer);
       settleTimer = 0;
       if (!document.querySelector('.lab-loading')) {
         settleTimer = window.setTimeout(() => {
-          const settledTarget = document.getElementById(decodeURIComponent(activeId));
+          const settledTarget = document.getElementById(activeId);
           settledTarget?.scrollIntoView({block:'start',behavior:'instant'});
           disconnectWatchers();
         }, 350);
@@ -113,9 +98,9 @@ export default function App() {
     };
     const scrollToHash = () => {
       disconnectWatchers();
-      activeId = window.location.hash.slice(1);
-      if (!activeId) return;
-      const target = document.getElementById(decodeURIComponent(activeId));
+      if (!window.location.hash) return;
+      activeId = viewFromHash();
+      const target = document.getElementById(activeId);
       if (!target) return;
       target.scrollIntoView({block:'start',behavior:'instant'});
       const shell = document.querySelector('.app-shell');
@@ -130,12 +115,24 @@ export default function App() {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(scrollToHash);
     };
+    const stopAutomaticAlignment = () => {
+      cancelAnimationFrame(frame);
+      disconnectWatchers();
+    };
     scheduleScroll();
     window.addEventListener('hashchange', scheduleScroll);
+    // Initial/lazy-route alignment must yield once a student starts working.
+    // Otherwise every graph mutation can scroll a bond away from their pointer.
+    window.addEventListener('pointerdown', stopAutomaticAlignment, true);
+    window.addEventListener('keydown', stopAutomaticAlignment, true);
+    window.addEventListener('wheel', stopAutomaticAlignment, { passive: true, capture: true });
     return () => {
       cancelAnimationFrame(frame);
       disconnectWatchers();
       window.removeEventListener('hashchange', scheduleScroll);
+      window.removeEventListener('pointerdown', stopAutomaticAlignment, true);
+      window.removeEventListener('keydown', stopAutomaticAlignment, true);
+      window.removeEventListener('wheel', stopAutomaticAlignment, true);
     };
   }, []);
 

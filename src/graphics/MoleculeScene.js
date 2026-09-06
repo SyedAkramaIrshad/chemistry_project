@@ -552,8 +552,14 @@ export function createMoleculeScene(host, callbacks = {}) {
       animation = { ...event, start: performance.now(), duration: 620, fragments, fragDirection: from && to ? pointFor(to).sub(pointFor(from)).normalize() : null };
       announcer.textContent = event.kind === 'bond' ? 'Bond formed. Inspect its properties or select it to break.' : event.kind === 'break' ? 'Bond broken. Both atoms remain.' : event.kind === 'blocked' ? 'Bond attempt rejected. The chemistry graph is unchanged.' : '';
     }
-    if ((!hasFitted && snapshot.atoms.length) || (next.graphKey != null && next.graphKey !== previous.graphKey)) fit();
-    invalidate();
+    if ((!hasFitted && snapshot.atoms.length) || (next.graphKey != null && next.graphKey !== previous.graphKey)) {
+      fit();
+      // A graph replacement can change the camera before the next RAF. Publish
+      // matching atom controls and hit-test meshes now, so an immediate drag
+      // after Undo cannot use labels projected with the previous camera.
+      if (raf) cancelAnimationFrame(raf);
+      draw(performance.now());
+    } else invalidate();
   }
 
   function fit() {
@@ -647,6 +653,7 @@ export function createMoleculeScene(host, callbacks = {}) {
     if (event.key === 'Escape') { cancelGesture(); callbacks.clearSelection?.(); }
   }
   function wheel(event) {
+    if (event.ctrlKey || event.metaKey) return;
     event.preventDefault(); event.stopPropagation();
     const delta = clamp(event.deltaY * (event.deltaMode === 1 ? 16 : 1), -120, 120);
     camera.zoom = clamp(camera.zoom * Math.exp(-delta * 0.0018), 0.28, 2.5);
