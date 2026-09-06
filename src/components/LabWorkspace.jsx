@@ -56,7 +56,7 @@ function MolecularBuilder() {
       </header>
       <BuilderToolbar />
       <DiscoveryBuildTray />
-      <p id="draftStatus" className="playground-draft-status" role="status">Your work stays in this browser tab.</p>
+      <p id="draftStatus" className="playground-draft-status" role="status">Preparing your molecular workspace…</p>
       <div id="workspace" role="application" aria-label="Molecular graph building workspace" aria-describedby="sceneStatus">
         <div id="sceneLayer" />
         <div className="canvas-hud" aria-hidden="true"><span><i /> Live graph</span><small>You control every edit</small></div>
@@ -71,7 +71,7 @@ function MolecularBuilder() {
         <svg id="bondLayer" aria-hidden="true" />
         <div id="atomLayer" />
         <p className="scene-model-caption">SCHEMATIC GEOMETRY · ILLUSTRATIVE MOTION</p>
-        <p id="sceneStatus" className="scene-view-status" role="status">Drop one atom onto another to connect</p>
+        <p id="sceneStatus" className="scene-view-status" role="status">Preparing editor…</p>
         <div className="bond-guide bond-guide-overlay" id="bondGuide" aria-live="polite">
           <div className="guide-icon" id="guideIcon">1</div>
           <div className="guide-copy"><strong id="guideTitle">Add or select an atom</strong><span id="guideDetail">Choose a green socket, then another atom to make a bond.</span></div>
@@ -130,7 +130,7 @@ function InspectorStack() {
 
 export default function LabWorkspace() {
   return (
-    <main className="molecule-playground lab-grid" id="laboratory">
+    <main className="molecule-playground lab-grid" id="laboratory" aria-busy="true" inert>
       <header className="playground-heading">
         <div className="playground-title"><p>CHEMLAB / PLAYGROUND</p><h2>Small atoms. <em>Real discoveries.</em></h2><span>Build it atom by atom. Watch a molecule take shape.</span></div>
         <div className="playground-process" aria-label="How to use the playground"><span><i>01</i> Add atoms</span><span><i>02</i> Connect them</span><span><i>03</i> Discover a molecule</span></div>

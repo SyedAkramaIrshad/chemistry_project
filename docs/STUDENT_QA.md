@@ -4,6 +4,7 @@ The playground is a teaching model for explicitly chosen atoms, bonds, and charg
 
 ## What this reliability pass fixes
 
+- Building controls wait until the editor has initialized and recovered the draft, preventing clicks from being lost during startup.
 - Refresh recovers the current molecule, selected attachment atom, learning goal, bond tool, reference/manual origin, and Undo history in the same browser tab.
 - Undo restores the attachment selection, so O → H → H → Undo → H creates water again.
 - Malformed or unavailable browser storage cannot prevent normal editing. Damaged saved records are ignored; rejected loads leave the current molecule intact.

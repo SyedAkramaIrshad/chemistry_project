@@ -1221,6 +1221,8 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
     refresh: render,
   });
   buildPalette();buildPresets();buildQuickSpecies();renderReactants();restoreDraft();render();
+  $('laboratory').inert=false;
+  $('laboratory').setAttribute('aria-busy','false');
   enableScene();
 })();
 

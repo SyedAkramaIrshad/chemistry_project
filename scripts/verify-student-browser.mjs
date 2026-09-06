@@ -25,7 +25,7 @@ const graph = () => page.evaluate(() => ({
 }));
 const identity = () => page.locator('#discoveryCard').getAttribute('data-recognized');
 const atom = async id => page.locator(await page.locator('#workspace').evaluate(n=>n.classList.contains('scene-ready')) ? `[data-scene-atom-id="${id}"]` : `#atomLayer .atom-node[data-id="${id}"]`);
-async function ready() { await page.locator('[data-build-element="O"]').waitFor({state:'visible'}); await page.locator('#sceneStatus').filter({hasText:/2D editing ready|Drop one atom/}).waitFor(); }
+async function ready() { await page.locator('#laboratory[aria-busy="false"]').waitFor(); await page.locator('[data-build-element="O"]').waitFor({state:'visible'}); await page.locator('#sceneStatus').filter({hasText:/2D editing ready|Drop one atom/}).waitFor(); }
 async function start(goal='water', attach=true) { await page.locator('#discoveryGoalSelect').selectOption(goal); await page.locator('#discoveryStartBtn').click(); await page.locator('#discoveryAttachToggle').setChecked(attach); }
 async function add(symbol) { const before=await graph(); await page.locator(`[data-build-element="${symbol}"]`).click(); const after=await graph(); assert.equal(after.atoms.length,before.atoms.length+1,`Add ${symbol}`); return after.atoms.find(a=>!before.atoms.some(b=>a.id===b.id)).id; }
 async function water() { await start(); for(const s of ['O','H','H']) await add(s); assert.equal(await identity(),'H2O'); }
