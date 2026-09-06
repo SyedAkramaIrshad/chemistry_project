@@ -1186,6 +1186,10 @@ import { MAX_ATOMS, MAX_HISTORY, DRAFT_KEY, SAVED_KEY, readGraph, readSnapshot, 
       return;
     }
     if($('laboratory').closest('[hidden]'))return;
+    // Navigation can receive a key before React finishes switching views.
+    // Playground shortcuts belong to its controls, never a focused nav link
+    // or a control in another lab, even during that transition.
+    if(document.activeElement!==document.body&&!$('laboratory').contains(document.activeElement))return;
     const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||document.activeElement?.isContentEditable;
     if(ev.key==='Escape'){cancelDiagramDrag?.();if(state.pendingBondAtomId||state.bondDrag||state.selectedBondKey){state.pendingBondAtomId=null;state.bondDrag=null;state.selectedBondKey=null;clearGuide();render();}}
     if(!editing&&!ev.shiftKey&&(ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='z'){ev.preventDefault();undo();}

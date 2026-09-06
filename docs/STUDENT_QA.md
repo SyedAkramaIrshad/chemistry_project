@@ -9,6 +9,7 @@ The playground is a teaching model for explicitly chosen atoms, bonds, and charg
 - Malformed or unavailable browser storage cannot prevent normal editing. Damaged saved records are ignored; rejected loads leave the current molecule intact.
 - A learner's saved molecule retains its origin. Loading a reference remains identified as a supplied answer, including after Undo or refresh.
 - Loading an example onto an empty canvas can be undone.
+- 3D atom controls and hit-test positions update together when Undo or a graph replacement changes the camera. Immediate reconnects are checked repeatedly.
 - Playground delete/undo shortcuts are inactive while another lab or a modal is open. Unsupported Shift+Ctrl/Cmd+Z does not accidentally undo.
 - Keyboard users can activate 2D sockets, keep focus across diagram and inspector updates, identify the chosen bond tool, and enter/leave dialogs.
 - Interrupted 2D drags restore the original positions. Bond gestures track their initiating pointer and ignore a second finger.

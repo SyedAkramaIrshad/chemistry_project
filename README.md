@@ -180,4 +180,3 @@ The six discovery goals link to their formula/structure reference records in the
 ## License
 
 Released under the [MIT License](LICENSE).
-

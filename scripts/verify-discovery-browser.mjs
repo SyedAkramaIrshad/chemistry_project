@@ -163,6 +163,13 @@ async function verifyWaterConnections(renderer) {
   await page.locator('#undoBtn').click();
   assert.deepEqual(await graph(), oneBond, 'One Undo reverses exactly one bond drop.');
   await drop(hydrogens[1].id, oxygen.id);
+  assert.equal(await page.locator('#discoveryCard').getAttribute('data-recognized'), 'H2O', `${renderer}: immediate reconnect after Undo restores water.`);
+  for (let repeat = 0; repeat < 3; repeat++) {
+    await page.locator('#undoBtn').click();
+    assert.deepEqual(await graph(), oneBond);
+    await drop(hydrogens[1].id, oxygen.id);
+    assert.equal(await page.locator('#discoveryCard').getAttribute('data-recognized'), 'H2O', `${renderer}: rapid Undo/reconnect ${repeat + 1}.`);
+  }
   await paletteAtom('H');
   const overfilledAttempt = await graph();
   await page.locator('#workspace').scrollIntoViewIfNeeded();
